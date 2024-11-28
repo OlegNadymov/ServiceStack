@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;
+using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
+[IgnoreServices]
 public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Register>
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>
@@ -51,17 +54,19 @@ public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Regis
 /// <summary>
 /// Register Base class for IAuthRepository / IUserAuth users
 /// </summary>
-public abstract class IdentityRegisterServiceBase<TUser,TKey> : RegisterServiceBase
+public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser> userManager) : RegisterServiceBase
     where TKey : IEquatable<TKey>
-    where TUser : IdentityUser<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
-    public IValidator<Register> RegistrationValidator { get; set; }
+#if NET8_0_OR_GREATER
+    [Microsoft.AspNetCore.Mvc.FromServices]
+#endif
+    public IValidator<Register>? RegistrationValidator { get; set; }
 
-    protected readonly UserManager<TUser> userManager;
-    public IdentityRegisterServiceBase(UserManager<TUser> userManager)
-    {
-        this.userManager = userManager;
-    }
+    public IdentityAuthContext<TUser, TKey> AuthContext => IdentityAuth.Instance<TUser, TKey>()
+        ?? throw new Exception(nameof(IdentityAuth) + " not configured");
+
+    protected UserManager<TUser> UserManager => userManager;
 
     protected TUser ToUser(Register request)
     {
@@ -76,7 +81,11 @@ public abstract class IdentityRegisterServiceBase<TUser,TKey> : RegisterServiceB
 
     protected virtual async Task ValidateAndThrowAsync(Register request)
     {
-        var validator = RegistrationValidator ?? new RegistrationValidator();
+        var validator = RegistrationValidator 
+            ?? ValidatorCache.GetValidator(Request, typeof(Register)) as IValidator<Register>
+            ?? new IdentityRegistrationValidator<TUser, TKey>();
+        if (validator is IRequiresRequest requiresRequest)
+            requiresRequest.Request ??= Request;
         await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
     }
 
@@ -94,12 +103,11 @@ public abstract class IdentityRegisterServiceBase<TUser,TKey> : RegisterServiceB
 }
 
 [DefaultRequest(typeof(Register))]
-public class IdentityRegisterService<TUser,TKey> : IdentityRegisterServiceBase<TUser,TKey>
+public class IdentityRegisterService<TUser, TKey>(UserManager<TUser> userManager)
+    : IdentityRegisterServiceBase<TUser, TKey>(userManager)
     where TKey : IEquatable<TKey>
-    where TUser : IdentityUser<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
-    public IdentityRegisterService(UserManager<TUser> userManager) : base(userManager) { }
-
     public async Task<object> PostAsync(Register request)
     {
         var session = await GetSessionAsync();
@@ -113,7 +121,7 @@ public class IdentityRegisterService<TUser,TKey> : IdentityRegisterServiceBase<T
         var result = await userManager.CreateAsync(newUser, request.Password);
         if (result.Succeeded)
         {
-            session = IdentityAuth.Instance<TUser,TKey>()!.UserToSessionConverter(newUser);
+            session = AuthContext.UserToSessionConverter(newUser);
             await RegisterNewUserAsync(session, newUser);
 
             var response = await CreateRegisterResponse(session,

@@ -134,8 +134,18 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.AspNetCore.OpenApi -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.AspNetCore.OpenApi/ServiceStack.AspNetCore.OpenApi.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
     <!-- ServiceStack.GoogleCloud -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.GoogleCloud/ServiceStack.GoogleCloud.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Jobs -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Jobs/ServiceStack.Jobs.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 

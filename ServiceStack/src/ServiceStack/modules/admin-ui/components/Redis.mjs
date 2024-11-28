@@ -657,8 +657,7 @@ export const Redis = {
          * @returns {*}
          */
         async function send(request, opt) {
-            
-            console.log('send', request, opt)
+            console.debug('send', request, opt)
             const api = await client.api(request, { jsconfig: 'eccn' })
             if (!opt) opt = { id:null, type:null }
             let { id, type } = opt
@@ -857,7 +856,7 @@ export const Redis = {
         function clearFilters() {
             routes.to(href({show:''}))
         }
-        const take = ref(server.plugins.requestLogs.defaultLimit)
+        const take = ref(server.plugins.requestLogs?.defaultLimit ?? 100)
         const canPrev = computed(() => routes.skip > 0)
         const canNext = computed(() => results.value.length >= take.value)
         function nextSkip(skip) {

@@ -776,6 +776,8 @@ public static class StringExtensions
         }
         return StringBuilderThreadStatic.ReturnAndFree(sb);
     }
+
+    public static string ToUppercaseUnderscore(this string value) => value.ToLowercaseUnderscore().ToUpper();
         
     public static string ToKebabCase(this string value) => value.ToLowercaseUnderscore().Replace("_","-");
 
@@ -850,6 +852,12 @@ public static class StringExtensions
     public static string ToEnglish(this string camelCase)
     {
         var ucWords = camelCase.SplitCamelCase().ToLower();
+        return ucWords[0].ToInvariantUpper() + ucWords.Substring(1);
+    }
+
+    public static string SplitCase(this string camelCase)
+    {
+        var ucWords = camelCase.SplitCamelCase();
         return ucWords[0].ToInvariantUpper() + ucWords.Substring(1);
     }
 

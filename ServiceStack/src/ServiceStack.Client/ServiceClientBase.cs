@@ -66,7 +66,7 @@ namespace ServiceStack
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-        public NameValueCollection Headers { get; private set; }
+        public NameValueCollection Headers { get; private set; } = [];
 
         public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStackClient/" + Env.VersionString;
@@ -79,8 +79,6 @@ namespace ServiceStack
 
         protected ServiceClientBase()
         {
-            this.HttpMethod = DefaultHttpMethod;
-            this.Headers = new NameValueCollection();
             var cookies = new CookieContainer();
 #if NET6_0_OR_GREATER
             this.HttpClient = new System.Net.Http.HttpClient(new System.Net.Http.HttpClientHandler {
@@ -304,7 +302,7 @@ namespace ServiceStack
 
         public abstract string ContentType { get; }
 
-        public string HttpMethod { get; set; }
+        public string HttpMethod { get; set; } = DefaultHttpMethod;
 
         public bool EmulateHttpViaPost
         {
@@ -2137,9 +2135,9 @@ namespace ServiceStack
                     hasBearer.BearerToken = serviceClient.GetTokenCookie();
                 }
             }
-            if (client is IHasVersion clientVersion && clientVersion.Version > 0)
+            if (client is IHasVersion { Version: > 0 } clientVersion)
             {
-                if (request is IHasVersion hasVersion && hasVersion.Version <= 0)
+                if (request is IHasVersion { Version: <= 0 } hasVersion)
                     hasVersion.Version = clientVersion.Version;
             }
         }

@@ -59,7 +59,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     {
         var views = virtualFiles.GetDirectory("Views");
         if (views == null)
-            return new List<string> { "~/Views" };
+            return ["~/Views"];
 
         var files = views.GetAllMatchingFiles("*.cshtml");
         var folders = files.Map(x => x.VirtualPath.LastLeftPart("/"));
@@ -69,8 +69,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public void Register(IAppHost appHost)
     {
-        if (ViewLocations == null)
-            ViewLocations = GetDefaultViewLocations(appHost.VirtualFiles);
+        ViewLocations ??= GetDefaultViewLocations(appHost.VirtualFiles);
 
         appHost.CatchAllHandlers.Add(CatchAllHandler);
         appHost.ViewEngines.Add(this);
@@ -87,9 +86,9 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
             throw new Exception(ErrorMvcNotInit);
     }
 
-    public Host.IHttpHandler CatchAllHandler(string httpMethod, string pathInfo, string filepath)
+    public Host.IHttpHandler CatchAllHandler(IRequest req)
     {
-        var viewEngineResult = GetPageFromPathInfo(pathInfo);
+        var viewEngineResult = GetPageFromPathInfo(req.PathInfo);
 
         return viewEngineResult != null
             ? new RazorHandler(viewEngineResult)
@@ -131,13 +130,13 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
 
     public string IndexPage { get; set; } = "default";
 
-    protected virtual Host.IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+    protected virtual Host.IHttpHandler PageBasedRoutingHandler(IRequest req)
     {
-        var extPos = pathInfo.LastIndexOf('.');
-        if (extPos >= 0 && pathInfo.Substring(extPos) != ".cshtml")
+        var extPos = req.PathInfo.LastIndexOf('.');
+        if (extPos >= 0 && req.PathInfo.Substring(extPos) != ".cshtml")
             return null;
         
-        var viewEngineResult = GetRoutingPage(pathInfo, out var args);
+        var viewEngineResult = GetRoutingPage(req.PathInfo, out var args);
         return viewEngineResult != null
             ? new RazorHandler(viewEngineResult) { Args = args }
             : null;
@@ -716,10 +715,11 @@ public static class RazorViewExtensions
             (html.ViewContext.ViewData.Model as ServiceStack.Mvc.RazorPage)?.TryGetHttpRequest() ??
 #endif 
             html.ViewContext.ViewData[Keywords.IRequest] as IRequest
-            ?? html.ViewContext.HttpContext.Items[Keywords.IRequest] as IRequest
+            ?? html.ViewContext.HttpContext?.Items[Keywords.IRequest] as IRequest
 #if NET6_0_OR_GREATER
             ?? (html.ViewContext.ViewData.Model as ServiceStack.Mvc.RazorPage)?.HttpRequest
 #endif 
+            ?? html.ViewContext.HttpContext?.ToRequest()
             ?? HostContext.AppHost.TryGetCurrentRequest();
         return req;
     }
@@ -1286,7 +1286,8 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
 
     public virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
 
-    public virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
+    public virtual TService ResolveService<TService>() where TService : class, IService => 
+        ServiceStackProvider.ResolveService<TService>();
 
     public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 

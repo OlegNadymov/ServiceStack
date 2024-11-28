@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
-using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class AdminDatabaseFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
+public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin, IPostInitPlugin
 {
     public string Id { get; set; } = Plugins.AdminDatabase;
     public string AdminRole { get; set; } = RoleNames.Admin;
@@ -25,10 +25,43 @@ public class AdminDatabaseFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
 
     public int QueryLimit { get; set; } = 100;
 
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(AdminDatabaseService));
+    }
+
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService(typeof(AdminDatabaseService));
+    }
 
+    private static List<SchemaInfo> ToSchemaTables(Dictionary<string, List<string>> schemasMap)
+    {
+        var schemas = new List<SchemaInfo>(); 
+        schemasMap.Keys.OrderBy(x => x).Each(schema =>
+        {
+            schemas.Add(new SchemaInfo
+            {
+                Name = schema,
+                Tables = schemasMap[schema],
+            });
+        });
+        return schemas;
+    }
+
+    public void BeforePluginsLoaded(IAppHost appHost)
+    {
+        appHost.ConfigurePlugin<UiFeature>(feature => {
+            feature.AddAdminLink(AdminUiFeature.Database, new LinkInfo {
+                Id = "database",
+                Label = "Database",
+                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Database)),
+                Show = $"role:{AdminRole}",
+            });
+        });
+    }
+
+    public void AfterPluginsLoaded(IAppHost appHost)
+    {
         var dbFactory = appHost.Resolve<IDbConnectionFactory>();
         using var db = dbFactory.Open();
 
@@ -58,32 +91,6 @@ public class AdminDatabaseFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
                 QueryLimit = QueryLimit,
                 Databases = databases,
             };
-        });
-    }
-
-    private static List<SchemaInfo> ToSchemaTables(Dictionary<string, List<string>> schemasMap)
-    {
-        var schemas = new List<SchemaInfo>(); 
-        schemasMap.Keys.OrderBy(x => x).Each(schema =>
-        {
-            schemas.Add(new SchemaInfo
-            {
-                Name = schema,
-                Tables = schemasMap[schema],
-            });
-        });
-        return schemas;
-    }
-
-    public void BeforePluginsLoaded(IAppHost appHost)
-    {
-        appHost.ConfigurePlugin<UiFeature>(feature => {
-            feature.AddAdminLink(AdminUiFeature.Database, new LinkInfo {
-                Id = "database",
-                Label = "Database",
-                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Database)),
-                Show = $"role:{AdminRole}",
-            });
         });
     }
 }
@@ -136,7 +143,7 @@ public class AdminDatabaseService : Service
         }
     }
 
-    private static char[] Delims = { '=', '!', '<', '>', '[', ']' };
+    private static char[] Delims = ['=', '!', '<', '>', '[', ']'];
 
     private static ConcurrentDictionary<string, List<MetadataPropertyType>> ColumnCache = new();
 

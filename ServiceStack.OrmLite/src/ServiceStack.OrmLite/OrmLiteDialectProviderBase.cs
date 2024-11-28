@@ -34,12 +34,6 @@ namespace ServiceStack.OrmLite
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(IOrmLiteDialectProvider));
 
-        protected OrmLiteDialectProviderBase()
-        {
-            Variables = new Dictionary<string, string>();
-            StringSerializer = new JsvStringSerializer();
-        }
-
         #region ADO.NET supported types
         /* ADO.NET UNDERSTOOD DATA TYPES:
 			COUNTER	DbType.Int64
@@ -163,7 +157,7 @@ namespace ServiceStack.OrmLite
 
         public abstract IDbDataParameter CreateParam();
 
-        public Dictionary<string, string> Variables { get; set; }
+        public Dictionary<string, string> Variables { get; set; } = new();
 
         public IOrmLiteExecFilter ExecFilter { get; set; }
 
@@ -187,14 +181,14 @@ namespace ServiceStack.OrmLite
             set => OneTimeConnectionCommands.Add($"SET GLOBAL LOCAL_INFILE={value.ToString().ToUpper()};");
         }
         
-        public List<string> OneTimeConnectionCommands { get; } = new();
-        public List<string> ConnectionCommands { get; } = new();
+        public List<string> OneTimeConnectionCommands { get; } = [];
+        public List<string> ConnectionCommands { get; } = [];
 
         public string ParamString { get; set; } = "@";
 
         public INamingStrategy NamingStrategy { get; set; } = new OrmLiteDefaultNamingStrategy();
 
-        public IStringSerializer StringSerializer { get; set; }
+        public IStringSerializer StringSerializer { get; set; } = new JsvStringSerializer();
 
         private Func<string, string> paramNameFilter;
         public Func<string, string> ParamNameFilter
@@ -204,6 +198,7 @@ namespace ServiceStack.OrmLite
         }
         
         public virtual bool SupportsSchema => true;
+        public virtual bool SupportsConcurrentWrites => true;
 
         public string DefaultValueFormat = " DEFAULT ({0})";
 
@@ -279,7 +274,7 @@ namespace ServiceStack.OrmLite
         public virtual bool ShouldQuoteValue(Type fieldType)
         {
             var converter = GetConverter(fieldType);
-            return converter == null || converter is NativeValueOrmLiteConverter;
+            return converter is null or NativeValueOrmLiteConverter;
         }
 
 		public virtual object FromDbRowVersion(Type fieldType, object value)
@@ -300,7 +295,7 @@ namespace ServiceStack.OrmLite
                 return EnumConverter;
 
             return type.IsRefType()
-                ? (IOrmLiteConverter)ReferenceTypeConverter
+                ? ReferenceTypeConverter
                 : ValueTypeConverter;
         }
 
@@ -318,7 +313,7 @@ namespace ServiceStack.OrmLite
                 return EnumConverter;
 
             return fieldType.IsRefType()
-                ? (IOrmLiteConverter)ReferenceTypeConverter
+                ? ReferenceTypeConverter
                 : ValueTypeConverter;
         }
 
@@ -1058,7 +1053,9 @@ namespace ServiceStack.OrmLite
                 }
                 catch (Exception ex)
                 {
-                    OrmLiteUtils.HandleException(ex, "ERROR in PrepareParameterizedUpdateStatement(): " + ex.Message);
+                    Log.Error(ex, "ERROR in PrepareParameterizedUpdateStatement(): " + ex.Message);
+                    if (OrmLiteConfig.ThrowOnError)
+                        throw;
                 }
             }
 
@@ -1131,7 +1128,9 @@ namespace ServiceStack.OrmLite
                 }
                 catch (Exception ex)
                 {
-                    OrmLiteUtils.HandleException(ex, "ERROR in PrepareParameterizedDeleteStatement(): " + ex.Message);
+                    Log.Error(ex, "ERROR in PrepareParameterizedDeleteStatement(): " + ex.Message);
+                    if (OrmLiteConfig.ThrowOnError)
+                        throw;
                 }
             }
 
@@ -1195,13 +1194,13 @@ namespace ServiceStack.OrmLite
                     }
 
                     if (fieldDef == null)
-                        throw new ArgumentException($"Field Definition '{fieldName}' was not found");
+                        throw new ArgumentException("Field Definition was not found", fieldName);
                 }
 
                 if (fieldDef.AutoId && p.Value != null)
                 {
                     var existingId = fieldDef.GetValue(obj);
-                    if (existingId is Guid existingGuid && existingGuid != default(Guid))
+                    if (existingId is Guid existingGuid && existingGuid != default)
                     {
                         p.Value = existingGuid; // Use existing value if not default
                     }
@@ -1340,7 +1339,9 @@ namespace ServiceStack.OrmLite
                 }
                 catch (Exception ex)
                 {
-                    OrmLiteUtils.HandleException(ex, "ERROR in ToUpdateRowStatement(): " + ex.Message);
+                    Log.Error(ex, "ERROR in ToUpdateRowStatement(): " + ex.Message);
+                    if (OrmLiteConfig.ThrowOnError)
+                        throw;
                 }
             }
 
@@ -1377,7 +1378,9 @@ namespace ServiceStack.OrmLite
                 }
                 catch (Exception ex)
                 {
-                    OrmLiteUtils.HandleException(ex, "ERROR in PrepareUpdateRowStatement(cmd,args): " + ex.Message);
+                    Log.Error(ex, "ERROR in PrepareUpdateRowStatement(cmd,args): " + ex.Message);
+                    if (OrmLiteConfig.ThrowOnError)
+                        throw;
                 }
             }
 
@@ -1428,7 +1431,9 @@ namespace ServiceStack.OrmLite
                 }
                 catch (Exception ex)
                 {
-                    OrmLiteUtils.HandleException(ex, "ERROR in PrepareUpdateRowAddStatement(): " + ex.Message);
+                    Log.Error(ex, "ERROR in PrepareUpdateRowAddStatement(): " + ex.Message);
+                    if (OrmLiteConfig.ThrowOnError)
+                        throw;
                 }
             }
 
@@ -1824,6 +1829,8 @@ namespace ServiceStack.OrmLite
         public virtual string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
             $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
 
+        public virtual string ToDropConstraintStatement(string schema, string table, string constraintName) => null;
+
         public virtual string ToCreateIndexStatement<T>(Expression<Func<T, object>> field, string indexName = null, bool unique = false)
         {
             var sourceDef = ModelDefinition<T>.Definition;
@@ -1930,6 +1937,7 @@ namespace ServiceStack.OrmLite
 
         //Async API's, should be overriden by Dialect Providers to use .ConfigureAwait(false)
         //Default impl below uses TaskAwaiter shim in async.cs
+        public virtual bool SupportsAsync => false;
 
         public virtual Task OpenAsync(IDbConnection db, CancellationToken token = default)
         {
@@ -1957,7 +1965,6 @@ namespace ServiceStack.OrmLite
             return reader.Read().InTask();
         }
 
-#if ASYNC
         public virtual async Task<List<T>> ReaderEach<T>(IDataReader reader, Func<T> fn, CancellationToken token = default)
         {
             try
@@ -2017,26 +2024,5 @@ namespace ServiceStack.OrmLite
 
             return dbCmd.ExecLongScalarAsync(null, token);
         }
-#else
-        public Task<List<T>> ReaderEach<T>(IDataReader reader, Func<T> fn, CancellationToken token = new CancellationToken())
-        {
-            throw new NotImplementedException(OrmLiteUtils.AsyncRequiresNet45Error);
-        }
-
-        public Task<Return> ReaderEach<Return>(IDataReader reader, Action fn, Return source, CancellationToken token = new CancellationToken())
-        {
-            throw new NotImplementedException(OrmLiteUtils.AsyncRequiresNet45Error);
-        }
-
-        public Task<T> ReaderRead<T>(IDataReader reader, Func<T> fn, CancellationToken token = new CancellationToken())
-        {
-            throw new NotImplementedException(OrmLiteUtils.AsyncRequiresNet45Error);
-        }
-
-        public Task<long> InsertAndGetLastInsertIdAsync<T>(IDbCommand dbCmd, CancellationToken token)
-        {
-            throw new NotImplementedException(OrmLiteUtils.AsyncRequiresNet45Error);
-        }
-#endif
     }
 }

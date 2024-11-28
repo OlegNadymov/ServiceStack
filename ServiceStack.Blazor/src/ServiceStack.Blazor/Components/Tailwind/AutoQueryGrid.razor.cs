@@ -63,6 +63,8 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public string TableHeaderRowClass { get; set; } = CssDefaults.Grid.GetTableHeaderRowClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
     [Parameter] public string TableHeaderCellClass { get; set; } = CssDefaults.Grid.GetTableHeaderCellClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
     [Parameter] public string TableBodyClass { get; set; } = CssDefaults.Grid.GetTableBodyClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string ModelTitle { get; set; } = TextUtils.Humanize(typeof(Model));
+    [Parameter] public string NewButtonLabel { get; set; } = $"New {TextUtils.Humanize(typeof(Model))}";
 
 
     [Parameter] public List<Model> Items { get; set; } = new();
@@ -71,6 +73,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public Predicate<string>? DisableKeyBindings { get; set; }
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
+    [Parameter] public EventCallback<List<Model>> DataLoaded { get; set; }
     [Parameter] public ApiPrefs? Prefs { get; set; }
     [Parameter] public bool MonitorNavigationChanges { get; set; } = true;
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
@@ -152,8 +155,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
 
     int filtersCount => GetColumns().Select(x => x.Settings.Filters.Count).Sum();
 
-    List<MetadataPropertyType> Properties => appMetadataApi.Response?.Api.Types
-        .FirstOrDefault(x => x.Name == typeof(Model).Name)?.Properties ?? new();
+    List<MetadataPropertyType> Properties => appMetadataApi.Response?.GetAllProperties(typeof(Model).Name) ?? [];
     List<MetadataPropertyType> ViewModelColumns => Properties.Where(x => GetColumns().Any(c => c.Name == x.Name)).ToList();
 
     Column<Model>? Filter { get; set; }
@@ -390,9 +392,14 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         Api = await ApiAsync(requestWithReturn);
 
         log($"UpdateAsync: {request.GetType().Name}({lastQuery}) Succeeded: {Api.Succeeded}, Results: {Api.Response?.Results?.Count ?? 0}");
-        if (!Api.Succeeded)
+        if (!Api.Succeeded) 
+        {
             log("Api: " + Api.ErrorSummary ?? Api.Error?.ErrorCode);
-
+        }
+        else
+        {
+            await DataLoaded.InvokeAsync(Results);
+        }   
         StateHasChanged();
     }
 

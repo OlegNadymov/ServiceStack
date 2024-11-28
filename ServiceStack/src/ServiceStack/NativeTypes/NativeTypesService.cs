@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Jobs;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
@@ -21,6 +22,9 @@ namespace ServiceStack.NativeTypes;
 [Route("/types")]
 public class TypeLinks : NativeTypesBase, IGet, IReturn<Dictionary<string, string>> { }
 
+#if NET8_0_OR_GREATER
+[SystemJson(UseSystemJson.Never)]
+#endif
 [ExcludeMetadata]
 [Route("/types/metadata")]
 public class TypesMetadata : NativeTypesBase, IGet, IReturn<MetadataTypes> { }
@@ -144,28 +148,27 @@ public interface INativeTypesMetadata
 }
 
 [Restrict(VisibilityTo = RequestAttributes.None)]
-public class NativeTypesService : Service
+public class NativeTypesService(INativeTypesMetadata metadata) : Service
 {
-    public INativeTypesMetadata NativeTypesMetadata { get; set; }
-    public static List<Action<IRequest,Dictionary<string, string>>> TypeLinksFilters { get; set; } = new();
+    public static List<Action<IRequest,Dictionary<string, string>>> TypeLinksFilters { get; set; } = [];
         
     public object Any(TypeLinks request)
     {
         var links = new Dictionary<string,string> {
-            {"Metadata", new TypesMetadata().ToAbsoluteUri(Request)},
-            {"CSharp", new TypesCSharp().ToAbsoluteUri(Request)},
-            {"FSharp", new TypesFSharp().ToAbsoluteUri(Request)},
-            {"VbNet", new TypesVbNet().ToAbsoluteUri(Request)},
-            {"TypeScript", new TypesTypeScript().ToAbsoluteUri(Request)},
-            {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri(Request)},
-            {"CommonJs", new TypesCommonJs().ToAbsoluteUri(Request)},
-            {"Mjs", new TypesMjs().ToAbsoluteUri(Request)},
-            {"Php", new TypesPhp().ToAbsoluteUri(Request)},
-            {"Dart", new TypesDart().ToAbsoluteUri(Request)},
-            {"Java", new TypesJava().ToAbsoluteUri(Request)},
-            {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
-            {"Swift", new TypesSwift().ToAbsoluteUri(Request)},
-            {"Python", new TypesPython().ToAbsoluteUri(Request)},
+            ["Metadata"] = new TypesMetadata().ToAbsoluteUri(Request),
+            ["CSharp"] = new TypesCSharp().ToAbsoluteUri(Request),
+            ["FSharp"] =  new TypesFSharp().ToAbsoluteUri(Request),
+            ["VbNet"] = new TypesVbNet().ToAbsoluteUri(Request),
+            ["TypeScript"] = new TypesTypeScript().ToAbsoluteUri(Request),
+            ["TypeScriptDefinition"] = new TypesTypeScriptDefinition().ToAbsoluteUri(Request),
+            ["CommonJs"] = new TypesCommonJs().ToAbsoluteUri(Request),
+            ["Mjs"] = new TypesMjs().ToAbsoluteUri(Request),
+            ["Php"] = new TypesPhp().ToAbsoluteUri(Request),
+            ["Dart"] = new TypesDart().ToAbsoluteUri(Request),
+            ["Java"] = new TypesJava().ToAbsoluteUri(Request),
+            ["Kotlin"] = new TypesKotlin().ToAbsoluteUri(Request),
+            ["Swift"] = new TypesSwift().ToAbsoluteUri(Request),
+            ["Python"] = new TypesPython().ToAbsoluteUri(Request),
         };
         foreach (var linksFilter in TypeLinksFilters)
         {
@@ -180,8 +183,8 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+        var typesConfig = metadata.GetConfig(request);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
         return metadataTypes;
     }
 
@@ -190,13 +193,13 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
 
         if (request.AddServiceStackTypes == true)
-            typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            typesConfig.IgnoreTypesInNamespaces = [];
             
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-        var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
+        var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return csharp;
     }
 
@@ -205,13 +208,13 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
 
         if (request.AddServiceStackTypes == true)
-            typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            typesConfig.IgnoreTypesInNamespaces = [];
             
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-        var fsharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
+        var fsharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return fsharp;
     }
 
@@ -220,13 +223,13 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
 
         if (request.AddServiceStackTypes == true)
-            typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            typesConfig.IgnoreTypesInNamespaces = [];
             
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-        var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
+        var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return vbnet;
     }
 
@@ -235,7 +238,7 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
         typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
         typesConfig.ExportAsTypes = true;
 
@@ -247,7 +250,7 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
         typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? true;
             
         return GenerateTypeScript(request, typesConfig);
@@ -257,7 +260,7 @@ public class NativeTypesService : Service
     {
         var metadataTypes = ResolveMetadataTypes(typesConfig);
 
-        var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return typeScript;
     }
 
@@ -268,12 +271,12 @@ public class NativeTypesService : Service
         {
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            var typesConfig = metadata.GetConfig(request);
             typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
             typesConfig.ExportAsTypes = true;
 
             var metadataTypes = ResolveMetadataTypes(typesConfig);
-            var typeScript = new CommonJsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            var typeScript = new CommonJsGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
             return typeScript;
         }
 
@@ -290,12 +293,12 @@ public class NativeTypesService : Service
         {
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            var typesConfig = metadata.GetConfig(request);
             typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
             typesConfig.ExportAsTypes = true;
 
             var metadataTypes = ResolveMetadataTypes(typesConfig);
-            var typeScript = new MjsGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            var typeScript = new MjsGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
             return typeScript;
         }
 
@@ -310,7 +313,7 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
         typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
         typesConfig.ExportAsTypes = true;
         typesConfig.AddServiceStackTypes = true;
@@ -333,7 +336,7 @@ public class NativeTypesService : Service
             metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
         }
 
-        var gen = new PhpGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var gen = new PhpGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return gen;
     }
 
@@ -342,7 +345,7 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
         typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
         typesConfig.ExportAsTypes = true;
             
@@ -364,7 +367,7 @@ public class NativeTypesService : Service
             metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
         }
 
-        var gen = new PythonGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var gen = new PythonGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return gen;
     }
 
@@ -373,7 +376,7 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
         typesConfig.ExportAsTypes = true;
             
         var metadataTypes = ResolveMetadataTypes(typesConfig);
@@ -394,16 +397,17 @@ public class NativeTypesService : Service
             metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
         }
             
-        var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return dart;
     }
 
-    public static List<Type> ReturnInterfaces = new() {
+    public static List<Type> ReturnInterfaces =
+    [
         typeof(IReturn<>),
-        typeof(IReturnVoid),
-    };
+        typeof(IReturnVoid)
+    ];
 
-    public static List<Type> BuiltinInterfaces = new []{
+    public static List<Type> BuiltinInterfaces = [
         typeof(IGet),
         typeof(IPost),
         typeof(IPut),
@@ -419,9 +423,9 @@ public class NativeTypesService : Service
         typeof(IPatchDb<>),
         typeof(IDeleteDb<>),
         typeof(ISaveDb<>),
-    }.ToList();
+    ];
 
-    public static List<Type> BuiltInClientDtos = new[] {
+    public static List<Type> BuiltInClientDtos = [
         typeof(ResponseStatus),
         typeof(ResponseError),
         typeof(EmptyResponse),
@@ -469,16 +473,24 @@ public class NativeTypesService : Service
         typeof(StreamFiles), // gRPC Server Stream
         typeof(StreamServerEvents), // gRPC Server Stream
         typeof(AuditBase),
-    }.ToList();
+        typeof(BackgroundJobBase),
+        typeof(BackgroundJobOptions),
+        typeof(BackgroundJob),
+        typeof(JobSummary),
+        typeof(ScheduledTask),
+        typeof(CompletedJob),
+        typeof(FailedJob),
+        typeof(WorkerStats),
+    ];
 
     public MetadataTypes ResolveMetadataTypes(MetadataTypesConfig typesConfig) =>
-        ResolveMetadataTypes(typesConfig, NativeTypesMetadata, Request);
+        ResolveMetadataTypes(typesConfig, metadata, Request);
         
     public static MetadataTypes ResolveMetadataTypes(MetadataTypesConfig typesConfig, INativeTypesMetadata nativeTypesMetadata, IRequest req)
     {
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            typesConfig.IgnoreTypesInNamespaces = [];
 
         typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
         typesConfig.ExportTypes.Add(typeof(Tuple<>));
@@ -522,11 +534,15 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
+        if (Request?.QueryString[nameof(request.MakePropertiesOptional)] == null)
+        {
+            typesConfig.MakePropertiesOptional = true;
+        }
 
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            typesConfig.IgnoreTypesInNamespaces = [];
 
         ExportMissingSystemTypes(typesConfig);
             
@@ -537,17 +553,10 @@ public class NativeTypesService : Service
         typesConfig.ExportTypes.Remove(typeof(IDeleteDb<>));
         typesConfig.ExportTypes.Remove(typeof(ISaveDb<>));
 
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
 
-        try
-        {
-            var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
-            return swift;
-        }
-        catch (System.Exception)
-        {
-            throw;
-        }
+        var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
+        return swift;
     }
 
     [AddHeader(ContentType = MimeTypes.PlainText)]
@@ -555,19 +564,19 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
 
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            typesConfig.IgnoreTypesInNamespaces = [];
 
         ExportMissingSystemTypes(typesConfig);
 
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
 
         metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
-        var java = new JavaGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var java = new JavaGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return java;
     }
 
@@ -576,25 +585,25 @@ public class NativeTypesService : Service
     {
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-        var typesConfig = NativeTypesMetadata.GetConfig(request);
+        var typesConfig = metadata.GetConfig(request);
 
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = new List<string>();
+            typesConfig.IgnoreTypesInNamespaces = [];
 
         ExportMissingSystemTypes(typesConfig);
 
-        var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+        var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
 
         metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
-        var java = new KotlinGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+        var java = new KotlinGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return java;
     }
 
     private static void ExportMissingSystemTypes(MetadataTypesConfig typesConfig)
     {
-        typesConfig.ExportTypes ??= new HashSet<Type>();
+        typesConfig.ExportTypes ??= [];
         typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
         typesConfig.ExportTypes.Remove(typeof(IMeta));
     }

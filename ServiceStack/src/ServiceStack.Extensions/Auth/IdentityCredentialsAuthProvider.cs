@@ -9,18 +9,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth;
 
-public interface IIdentityCredentialsAuthProvider
-{
-    bool LockoutOnFailure { get; set; }
-}
-
 /// <summary>
 /// Implements /auth/credentials authenticating against ASP.NET Identity IdentityUser
 /// </summary>
-/// <typeparam name="TUser"></typeparam>
 public class IdentityCredentialsAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityCredentialsAuthProvider
     where TKey : IEquatable<TKey>
-    where TUser : IdentityUser<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
     public override string Type => "credentials";
     public static string Name = AuthenticateService.CredentialsProvider;

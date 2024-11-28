@@ -1,6 +1,6 @@
 /* Options:
-Date: 2023-10-27 18:15:00
-Version: 6.111
+Date: 2024-10-17 23:05:22
+Version: 8.41
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 //AddServiceStackTypes: True
@@ -11,6 +11,363 @@ BaseUrl: http://localhost:20000
 //DefaultImports: 
 */
 "use strict";
+export class AdminUserBase {
+    /** @param {{userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    userName;
+    /** @type {string} */
+    firstName;
+    /** @type {string} */
+    lastName;
+    /** @type {string} */
+    displayName;
+    /** @type {string} */
+    email;
+    /** @type {string} */
+    password;
+    /** @type {string} */
+    profileUrl;
+    /** @type {string} */
+    phoneNumber;
+    /** @type {{ [index: string]: string; }} */
+    userAuthProperties;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class QueryBase {
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    skip;
+    /** @type {?number} */
+    take;
+    /** @type {string} */
+    orderBy;
+    /** @type {string} */
+    orderByDesc;
+    /** @type {string} */
+    include;
+    /** @type {string} */
+    fields;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+/** @typedef T {any} */
+export class QueryDb extends QueryBase {
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+}
+export class ResponseError {
+    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    errorCode;
+    /** @type {string} */
+    fieldName;
+    /** @type {string} */
+    message;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class ResponseStatus {
+    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    errorCode;
+    /** @type {string} */
+    message;
+    /** @type {string} */
+    stackTrace;
+    /** @type {ResponseError[]} */
+    errors;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class RequestLog {
+    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,request?:string,requestBody?:string,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },response?:string,responseBody?:string,sessionBody?:string,error?:ResponseStatus,exceptionSource?:string,exceptionDataBody?:string,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    traceId;
+    /** @type {string} */
+    operationName;
+    /** @type {string} */
+    dateTime;
+    /** @type {number} */
+    statusCode;
+    /** @type {?string} */
+    statusDescription;
+    /** @type {?string} */
+    httpMethod;
+    /** @type {?string} */
+    absoluteUri;
+    /** @type {?string} */
+    pathInfo;
+    /** @type {?string} */
+    request;
+    /** @type {?string} */
+    requestBody;
+    /** @type {?string} */
+    userAuthId;
+    /** @type {?string} */
+    sessionId;
+    /** @type {?string} */
+    ipAddress;
+    /** @type {?string} */
+    forwardedFor;
+    /** @type {?string} */
+    referer;
+    /** @type {{ [index: string]: string; }} */
+    headers;
+    /** @type {?{ [index: string]: string; }} */
+    formData;
+    /** @type {{ [index: string]: string; }} */
+    items;
+    /** @type {?{ [index: string]: string; }} */
+    responseHeaders;
+    /** @type {?string} */
+    response;
+    /** @type {?string} */
+    responseBody;
+    /** @type {?string} */
+    sessionBody;
+    /** @type {?ResponseStatus} */
+    error;
+    /** @type {?string} */
+    exceptionSource;
+    /** @type {?string} */
+    exceptionDataBody;
+    /** @type {string} */
+    requestDuration;
+    /** @type {?{ [index: string]: string; }} */
+    meta;
+}
+export class RedisEndpointInfo {
+    /** @param {{host?:string,port?:number,ssl?:boolean,db?:number,username?:string,password?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    host;
+    /** @type {number} */
+    port;
+    /** @type {?boolean} */
+    ssl;
+    /** @type {number} */
+    db;
+    /** @type {string} */
+    username;
+    /** @type {string} */
+    password;
+}
+/** @typedef {'Queued'|'Started'|'Executed'|'Completed'|'Failed'|'Cancelled'} */
+export var BackgroundJobState;
+(function (BackgroundJobState) {
+    BackgroundJobState["Queued"] = "Queued"
+    BackgroundJobState["Started"] = "Started"
+    BackgroundJobState["Executed"] = "Executed"
+    BackgroundJobState["Completed"] = "Completed"
+    BackgroundJobState["Failed"] = "Failed"
+    BackgroundJobState["Cancelled"] = "Cancelled"
+})(BackgroundJobState || (BackgroundJobState = {}));
+export class BackgroundJobBase {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    parentId;
+    /** @type {?string} */
+    refId;
+    /** @type {?string} */
+    worker;
+    /** @type {?string} */
+    tag;
+    /** @type {?string} */
+    batchId;
+    /** @type {?string} */
+    callback;
+    /** @type {?number} */
+    dependsOn;
+    /** @type {?string} */
+    runAfter;
+    /** @type {string} */
+    createdDate;
+    /** @type {?string} */
+    createdBy;
+    /** @type {?string} */
+    requestId;
+    /** @type {string} */
+    requestType;
+    /** @type {?string} */
+    command;
+    /** @type {string} */
+    request;
+    /** @type {string} */
+    requestBody;
+    /** @type {?string} */
+    userId;
+    /** @type {?string} */
+    response;
+    /** @type {?string} */
+    responseBody;
+    /** @type {BackgroundJobState} */
+    state;
+    /** @type {?string} */
+    startedDate;
+    /** @type {?string} */
+    completedDate;
+    /** @type {?string} */
+    notifiedDate;
+    /** @type {?number} */
+    retryLimit;
+    /** @type {number} */
+    attempts;
+    /** @type {number} */
+    durationMs;
+    /** @type {?number} */
+    timeoutSecs;
+    /** @type {?number} */
+    progress;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    logs;
+    /** @type {?string} */
+    lastActivityDate;
+    /** @type {?string} */
+    replyTo;
+    /** @type {?string} */
+    errorCode;
+    /** @type {?ResponseStatus} */
+    error;
+    /** @type {?{ [index: string]: string; }} */
+    args;
+    /** @type {?{ [index: string]: string; }} */
+    meta;
+}
+export class BackgroundJob extends BackgroundJobBase {
+    /** @param {{id?:number,id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {number} */
+    id;
+}
+export class JobSummary {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,createdDate?:string,createdBy?:string,requestType?:string,command?:string,request?:string,response?:string,userId?:string,callback?:string,startedDate?:string,completedDate?:string,state?:BackgroundJobState,durationMs?:number,attempts?:number,errorCode?:string,errorMessage?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    parentId;
+    /** @type {?string} */
+    refId;
+    /** @type {?string} */
+    worker;
+    /** @type {?string} */
+    tag;
+    /** @type {?string} */
+    batchId;
+    /** @type {string} */
+    createdDate;
+    /** @type {?string} */
+    createdBy;
+    /** @type {string} */
+    requestType;
+    /** @type {?string} */
+    command;
+    /** @type {string} */
+    request;
+    /** @type {?string} */
+    response;
+    /** @type {?string} */
+    userId;
+    /** @type {?string} */
+    callback;
+    /** @type {?string} */
+    startedDate;
+    /** @type {?string} */
+    completedDate;
+    /** @type {BackgroundJobState} */
+    state;
+    /** @type {number} */
+    durationMs;
+    /** @type {number} */
+    attempts;
+    /** @type {?string} */
+    errorCode;
+    /** @type {?string} */
+    errorMessage;
+}
+export class BackgroundJobOptions {
+    /** @param {{refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,timeout?:string,args?:{ [index: string]: string; },runCommand?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    refId;
+    /** @type {?number} */
+    parentId;
+    /** @type {?string} */
+    worker;
+    /** @type {?string} */
+    runAfter;
+    /** @type {?string} */
+    callback;
+    /** @type {?number} */
+    dependsOn;
+    /** @type {?string} */
+    userId;
+    /** @type {?number} */
+    retryLimit;
+    /** @type {?string} */
+    replyTo;
+    /** @type {?string} */
+    tag;
+    /** @type {?string} */
+    batchId;
+    /** @type {?string} */
+    createdBy;
+    /** @type {?number} */
+    timeoutSecs;
+    /** @type {?string} */
+    timeout;
+    /** @type {?{ [index: string]: string; }} */
+    args;
+    /** @type {?boolean} */
+    runCommand;
+}
+export class ScheduledTask {
+    /** @param {{id?:number,name?:string,interval?:string,cronExpression?:string,requestType?:string,command?:string,request?:string,requestBody?:string,options?:BackgroundJobOptions,lastRun?:string,lastJobId?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    name;
+    /** @type {?string} */
+    interval;
+    /** @type {?string} */
+    cronExpression;
+    /** @type {string} */
+    requestType;
+    /** @type {?string} */
+    command;
+    /** @type {string} */
+    request;
+    /** @type {string} */
+    requestBody;
+    /** @type {?BackgroundJobOptions} */
+    options;
+    /** @type {?string} */
+    lastRun;
+    /** @type {?number} */
+    lastJobId;
+}
+export class CompletedJob extends BackgroundJobBase {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+}
+export class FailedJob extends BackgroundJobBase {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+}
 export class ValidateRule {
     /** @param {{validator?:string,condition?:string,errorCode?:string,message?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -47,103 +404,8 @@ export class ValidationRule extends ValidateRule {
     /** @type {string} */
     notes;
 }
-export class AdminUserBase {
-    /** @param {{userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    userName;
-    /** @type {string} */
-    firstName;
-    /** @type {string} */
-    lastName;
-    /** @type {string} */
-    displayName;
-    /** @type {string} */
-    email;
-    /** @type {string} */
-    password;
-    /** @type {string} */
-    profileUrl;
-    /** @type {{ [index: string]: string; }} */
-    userAuthProperties;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class QueryBase {
-    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?number} */
-    skip;
-    /** @type {?number} */
-    take;
-    /** @type {string} */
-    orderBy;
-    /** @type {string} */
-    orderByDesc;
-    /** @type {string} */
-    include;
-    /** @type {string} */
-    fields;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-/** @typedef T {any} */
-export class QueryDb extends QueryBase {
-    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { super(init); Object.assign(this, init) }
-}
-export class CrudEvent {
-    /** @param {{id?:number,eventType?:string,model?:string,modelId?:string,eventDate?:string,rowsUpdated?:number,requestType?:string,requestBody?:string,userAuthId?:string,userAuthName?:string,remoteIp?:string,urn?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    id;
-    /** @type {string} */
-    eventType;
-    /** @type {string} */
-    model;
-    /** @type {string} */
-    modelId;
-    /** @type {string} */
-    eventDate;
-    /** @type {?number} */
-    rowsUpdated;
-    /** @type {string} */
-    requestType;
-    /** @type {string} */
-    requestBody;
-    /** @type {string} */
-    userAuthId;
-    /** @type {string} */
-    userAuthName;
-    /** @type {string} */
-    remoteIp;
-    /** @type {string} */
-    urn;
-    /** @type {?number} */
-    refId;
-    /** @type {string} */
-    refIdStr;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class RedisEndpointInfo {
-    /** @param {{host?:string,port?:number,ssl?:boolean,db?:number,username?:string,password?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    host;
-    /** @type {number} */
-    port;
-    /** @type {?boolean} */
-    ssl;
-    /** @type {number} */
-    db;
-    /** @type {string} */
-    username;
-    /** @type {string} */
-    password;
-}
 export class AppInfo {
-    /** @param {{baseUrl?:string,serviceStackVersion?:string,serviceName?:string,apiVersion?:string,serviceDescription?:string,serviceIconUrl?:string,brandUrl?:string,brandImageUrl?:string,textColor?:string,linkColor?:string,backgroundColor?:string,backgroundImageUrl?:string,iconUrl?:string,jsTextCase?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{baseUrl?:string,serviceStackVersion?:string,serviceName?:string,apiVersion?:string,serviceDescription?:string,serviceIconUrl?:string,brandUrl?:string,brandImageUrl?:string,textColor?:string,linkColor?:string,backgroundColor?:string,backgroundImageUrl?:string,iconUrl?:string,jsTextCase?:string,useSystemJson?:string,endpointRouting?:string[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     baseUrl;
@@ -173,6 +435,10 @@ export class AppInfo {
     iconUrl;
     /** @type {string} */
     jsTextCase;
+    /** @type {string} */
+    useSystemJson;
+    /** @type {?string[]} */
+    endpointRouting;
     /** @type {{ [index: string]: string; }} */
     meta;
 }
@@ -430,8 +696,16 @@ export class MetaAuthProvider {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
+export class IdentityAuthInfo {
+    /** @param {{hasRefreshToken?:boolean,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?boolean} */
+    hasRefreshToken;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
 export class AuthInfo {
-    /** @param {{hasAuthSecret?:boolean,hasAuthRepository?:boolean,includesRoles?:boolean,includesOAuthTokens?:boolean,htmlRedirect?:string,authProviders?:MetaAuthProvider[],roleLinks?:{ [index: string]: LinkInfo[]; },serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{hasAuthSecret?:boolean,hasAuthRepository?:boolean,includesRoles?:boolean,includesOAuthTokens?:boolean,htmlRedirect?:string,authProviders?:MetaAuthProvider[],identityAuth?:IdentityAuthInfo,roleLinks?:{ [index: string]: LinkInfo[]; },serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?boolean} */
     hasAuthSecret;
@@ -445,6 +719,8 @@ export class AuthInfo {
     htmlRedirect;
     /** @type {MetaAuthProvider[]} */
     authProviders;
+    /** @type {IdentityAuthInfo} */
+    identityAuth;
     /** @type {{ [index: string]: LinkInfo[]; }} */
     roleLinks;
     /** @type {{ [index: string]: string[]; }} */
@@ -452,149 +728,23 @@ export class AuthInfo {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
-export class AutoQueryConvention {
-    /** @param {{name?:string,value?:string,types?:string,valueType?:string}} [init] */
+export class ApiKeyInfo {
+    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],requestTypes?:string[],expiresIn?:KeyValuePair<string,string>[],hide?:string[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
-    name;
+    label;
     /** @type {string} */
-    value;
-    /** @type {string} */
-    types;
-    /** @type {string} */
-    valueType;
-}
-export class AutoQueryInfo {
-    /** @param {{maxLimit?:number,untypedQueries?:boolean,rawSqlFilters?:boolean,autoQueryViewer?:boolean,async?:boolean,orderByPrimaryKey?:boolean,crudEvents?:boolean,crudEventsServices?:boolean,accessRole?:string,namedConnection?:string,viewerConventions?:AutoQueryConvention[],meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?number} */
-    maxLimit;
-    /** @type {?boolean} */
-    untypedQueries;
-    /** @type {?boolean} */
-    rawSqlFilters;
-    /** @type {?boolean} */
-    autoQueryViewer;
-    /** @type {?boolean} */
-    async;
-    /** @type {?boolean} */
-    orderByPrimaryKey;
-    /** @type {?boolean} */
-    crudEvents;
-    /** @type {?boolean} */
-    crudEventsServices;
-    /** @type {string} */
-    accessRole;
-    /** @type {string} */
-    namedConnection;
-    /** @type {AutoQueryConvention[]} */
-    viewerConventions;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class ScriptMethodType {
-    /** @param {{name?:string,paramNames?:string[],paramTypes?:string[],returnType?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    name;
+    httpHeader;
     /** @type {string[]} */
-    paramNames;
+    scopes;
     /** @type {string[]} */
-    paramTypes;
-    /** @type {string} */
-    returnType;
-}
-export class ValidationInfo {
-    /** @param {{hasValidationSource?:boolean,hasValidationSourceAdmin?:boolean,serviceRoutes?:{ [index: string]: string[]; },typeValidators?:ScriptMethodType[],propertyValidators?:ScriptMethodType[],accessRole?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?boolean} */
-    hasValidationSource;
-    /** @type {?boolean} */
-    hasValidationSourceAdmin;
-    /** @type {{ [index: string]: string[]; }} */
-    serviceRoutes;
-    /** @type {ScriptMethodType[]} */
-    typeValidators;
-    /** @type {ScriptMethodType[]} */
-    propertyValidators;
-    /** @type {string} */
-    accessRole;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class SharpPagesInfo {
-    /** @param {{apiPath?:string,scriptAdminRole?:string,metadataDebugAdminRole?:string,metadataDebug?:boolean,spaFallback?:boolean,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    apiPath;
-    /** @type {string} */
-    scriptAdminRole;
-    /** @type {string} */
-    metadataDebugAdminRole;
-    /** @type {?boolean} */
-    metadataDebug;
-    /** @type {?boolean} */
-    spaFallback;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class RequestLogsInfo {
-    /** @param {{accessRole?:string,requiredRoles?:string[],requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    accessRole;
+    features;
     /** @type {string[]} */
-    requiredRoles;
-    /** @type {string} */
-    requestLogger;
-    /** @type {number} */
-    defaultLimit;
-    /** @type {{ [index: string]: string[]; }} */
-    serviceRoutes;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class ProfilingInfo {
-    /** @param {{accessRole?:string,defaultLimit?:number,summaryFields?:string[],tagLabel?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    accessRole;
-    /** @type {number} */
-    defaultLimit;
+    requestTypes;
+    /** @type {KeyValuePair<string,string>[]} */
+    expiresIn;
     /** @type {string[]} */
-    summaryFields;
-    /** @type {?string} */
-    tagLabel;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class FilesUploadLocation {
-    /** @param {{name?:string,readAccessRole?:string,writeAccessRole?:string,allowExtensions?:string[],allowOperations?:string,maxFileCount?:number,minFileBytes?:number,maxFileBytes?:number}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    name;
-    /** @type {string} */
-    readAccessRole;
-    /** @type {string} */
-    writeAccessRole;
-    /** @type {string[]} */
-    allowExtensions;
-    /** @type {string} */
-    allowOperations;
-    /** @type {?number} */
-    maxFileCount;
-    /** @type {?number} */
-    minFileBytes;
-    /** @type {?number} */
-    maxFileBytes;
-}
-export class FilesUploadInfo {
-    /** @param {{basePath?:string,locations?:FilesUploadLocation[],meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    basePath;
-    /** @type {FilesUploadLocation[]} */
-    locations;
+    hide;
     /** @type {{ [index: string]: string; }} */
     meta;
 }
@@ -752,6 +902,170 @@ export class MetadataType {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
+export class CommandInfo {
+    /** @param {{name?:string,tag?:string,request?:MetadataType,response?:MetadataType}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    tag;
+    /** @type {MetadataType} */
+    request;
+    /** @type {MetadataType} */
+    response;
+}
+export class CommandsInfo {
+    /** @param {{commands?:CommandInfo[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {CommandInfo[]} */
+    commands;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class AutoQueryConvention {
+    /** @param {{name?:string,value?:string,types?:string,valueType?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    value;
+    /** @type {string} */
+    types;
+    /** @type {string} */
+    valueType;
+}
+export class AutoQueryInfo {
+    /** @param {{maxLimit?:number,untypedQueries?:boolean,rawSqlFilters?:boolean,autoQueryViewer?:boolean,async?:boolean,orderByPrimaryKey?:boolean,crudEvents?:boolean,crudEventsServices?:boolean,accessRole?:string,namedConnection?:string,viewerConventions?:AutoQueryConvention[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    maxLimit;
+    /** @type {?boolean} */
+    untypedQueries;
+    /** @type {?boolean} */
+    rawSqlFilters;
+    /** @type {?boolean} */
+    autoQueryViewer;
+    /** @type {?boolean} */
+    async;
+    /** @type {?boolean} */
+    orderByPrimaryKey;
+    /** @type {?boolean} */
+    crudEvents;
+    /** @type {?boolean} */
+    crudEventsServices;
+    /** @type {string} */
+    accessRole;
+    /** @type {string} */
+    namedConnection;
+    /** @type {AutoQueryConvention[]} */
+    viewerConventions;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class ScriptMethodType {
+    /** @param {{name?:string,paramNames?:string[],paramTypes?:string[],returnType?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string[]} */
+    paramNames;
+    /** @type {string[]} */
+    paramTypes;
+    /** @type {string} */
+    returnType;
+}
+export class ValidationInfo {
+    /** @param {{hasValidationSource?:boolean,hasValidationSourceAdmin?:boolean,serviceRoutes?:{ [index: string]: string[]; },typeValidators?:ScriptMethodType[],propertyValidators?:ScriptMethodType[],accessRole?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?boolean} */
+    hasValidationSource;
+    /** @type {?boolean} */
+    hasValidationSourceAdmin;
+    /** @type {{ [index: string]: string[]; }} */
+    serviceRoutes;
+    /** @type {ScriptMethodType[]} */
+    typeValidators;
+    /** @type {ScriptMethodType[]} */
+    propertyValidators;
+    /** @type {string} */
+    accessRole;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class SharpPagesInfo {
+    /** @param {{apiPath?:string,scriptAdminRole?:string,metadataDebugAdminRole?:string,metadataDebug?:boolean,spaFallback?:boolean,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    apiPath;
+    /** @type {string} */
+    scriptAdminRole;
+    /** @type {string} */
+    metadataDebugAdminRole;
+    /** @type {?boolean} */
+    metadataDebug;
+    /** @type {?boolean} */
+    spaFallback;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class RequestLogsInfo {
+    /** @param {{accessRole?:string,requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    accessRole;
+    /** @type {string} */
+    requestLogger;
+    /** @type {number} */
+    defaultLimit;
+    /** @type {{ [index: string]: string[]; }} */
+    serviceRoutes;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class ProfilingInfo {
+    /** @param {{accessRole?:string,defaultLimit?:number,summaryFields?:string[],tagLabel?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    accessRole;
+    /** @type {number} */
+    defaultLimit;
+    /** @type {string[]} */
+    summaryFields;
+    /** @type {?string} */
+    tagLabel;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class FilesUploadLocation {
+    /** @param {{name?:string,readAccessRole?:string,writeAccessRole?:string,allowExtensions?:string[],allowOperations?:string,maxFileCount?:number,minFileBytes?:number,maxFileBytes?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    readAccessRole;
+    /** @type {string} */
+    writeAccessRole;
+    /** @type {string[]} */
+    allowExtensions;
+    /** @type {string} */
+    allowOperations;
+    /** @type {?number} */
+    maxFileCount;
+    /** @type {?number} */
+    minFileBytes;
+    /** @type {?number} */
+    maxFileBytes;
+}
+export class FilesUploadInfo {
+    /** @param {{basePath?:string,locations?:FilesUploadLocation[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    basePath;
+    /** @type {FilesUploadLocation[]} */
+    locations;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
 export class MediaRule {
     /** @param {{size?:string,rule?:string,applyTo?:string[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -779,6 +1093,30 @@ export class AdminUsersInfo {
     allPermissions;
     /** @type {string[]} */
     queryUserAuthProperties;
+    /** @type {MediaRule[]} */
+    queryMediaRules;
+    /** @type {InputInfo[]} */
+    formLayout;
+    /** @type {ApiCss} */
+    css;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class AdminIdentityUsersInfo {
+    /** @param {{accessRole?:string,enabled?:string[],identityUser?:MetadataType,allRoles?:string[],allPermissions?:string[],queryIdentityUserProperties?:string[],queryMediaRules?:MediaRule[],formLayout?:InputInfo[],css?:ApiCss,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    accessRole;
+    /** @type {string[]} */
+    enabled;
+    /** @type {MetadataType} */
+    identityUser;
+    /** @type {string[]} */
+    allRoles;
+    /** @type {string[]} */
+    allPermissions;
+    /** @type {string[]} */
+    queryIdentityUserProperties;
     /** @type {MediaRule[]} */
     queryMediaRules;
     /** @type {InputInfo[]} */
@@ -833,12 +1171,16 @@ export class AdminDatabaseInfo {
     meta;
 }
 export class PluginInfo {
-    /** @param {{loaded?:string[],auth?:AuthInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,commands?:CommandsInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     loaded;
     /** @type {AuthInfo} */
     auth;
+    /** @type {ApiKeyInfo} */
+    apiKey;
+    /** @type {CommandsInfo} */
+    commands;
     /** @type {AutoQueryInfo} */
     autoQuery;
     /** @type {ValidationInfo} */
@@ -853,6 +1195,8 @@ export class PluginInfo {
     filesUpload;
     /** @type {AdminUsersInfo} */
     adminUsers;
+    /** @type {AdminIdentityUsersInfo} */
+    adminIdentityUsers;
     /** @type {AdminRedisInfo} */
     adminRedis;
     /** @type {AdminDatabaseInfo} */
@@ -987,7 +1331,7 @@ export class ApiUiInfo {
     meta;
 }
 export class MetadataOperationType {
-    /** @param {{request?:MetadataType,response?:MetadataType,actions?:string[],returnsVoid?:boolean,method?:string,returnType?:MetadataTypeName,routes?:MetadataRoute[],dataModel?:MetadataTypeName,viewModel?:MetadataTypeName,requiresAuth?:boolean,requiredRoles?:string[],requiresAnyRole?:string[],requiredPermissions?:string[],requiresAnyPermission?:string[],tags?:string[],ui?:ApiUiInfo}} [init] */
+    /** @param {{request?:MetadataType,response?:MetadataType,actions?:string[],returnsVoid?:boolean,method?:string,returnType?:MetadataTypeName,routes?:MetadataRoute[],dataModel?:MetadataTypeName,viewModel?:MetadataTypeName,requiresAuth?:boolean,requiresApiKey?:boolean,requiredRoles?:string[],requiresAnyRole?:string[],requiredPermissions?:string[],requiresAnyPermission?:string[],tags?:string[],ui?:ApiUiInfo}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {MetadataType} */
     request;
@@ -1009,6 +1353,8 @@ export class MetadataOperationType {
     viewModel;
     /** @type {?boolean} */
     requiresAuth;
+    /** @type {?boolean} */
+    requiresApiKey;
     /** @type {string[]} */
     requiredRoles;
     /** @type {string[]} */
@@ -1045,90 +1391,6 @@ export class ServerStats {
     mqDescription;
     /** @type {{ [index: string]: number; }} */
     mqWorkers;
-}
-export class ResponseError {
-    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    errorCode;
-    /** @type {string} */
-    fieldName;
-    /** @type {string} */
-    message;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class ResponseStatus {
-    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    errorCode;
-    /** @type {string} */
-    message;
-    /** @type {string} */
-    stackTrace;
-    /** @type {ResponseError[]} */
-    errors;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class RequestLogEntry {
-    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    id;
-    /** @type {string} */
-    traceId;
-    /** @type {string} */
-    operationName;
-    /** @type {string} */
-    dateTime;
-    /** @type {number} */
-    statusCode;
-    /** @type {string} */
-    statusDescription;
-    /** @type {string} */
-    httpMethod;
-    /** @type {string} */
-    absoluteUri;
-    /** @type {string} */
-    pathInfo;
-    /** @type {string} */
-    requestBody;
-    /** @type {Object} */
-    requestDto;
-    /** @type {string} */
-    userAuthId;
-    /** @type {string} */
-    sessionId;
-    /** @type {string} */
-    ipAddress;
-    /** @type {string} */
-    forwardedFor;
-    /** @type {string} */
-    referer;
-    /** @type {{ [index: string]: string; }} */
-    headers;
-    /** @type {{ [index: string]: string; }} */
-    formData;
-    /** @type {{ [index: string]: string; }} */
-    items;
-    /** @type {{ [index: string]: string; }} */
-    responseHeaders;
-    /** @type {Object} */
-    session;
-    /** @type {Object} */
-    responseDto;
-    /** @type {Object} */
-    errorResponse;
-    /** @type {string} */
-    exceptionSource;
-    /** @type {any} */
-    exceptionData;
-    /** @type {string} */
-    requestDuration;
-    /** @type {{ [index: string]: string; }} */
-    meta;
 }
 export class DiagnosticEntry {
     /** @param {{id?:number,traceId?:string,source?:string,eventType?:string,message?:string,operation?:string,threadId?:number,error?:ResponseStatus,commandType?:string,command?:string,userAuthId?:string,sessionId?:string,arg?:string,args?:string[],argLengths?:number[],namedArgs?:{ [index: string]: Object; },duration?:string,timestamp?:number,date?:string,tag?:string,stackTrace?:string,meta?:{ [index: string]: string; }}} [init] */
@@ -1198,6 +1460,202 @@ export class RedisText {
     /** @type {RedisText[]} */
     children;
 }
+export class CommandSummary {
+    /** @param {{type?:string,name?:string,count?:number,failed?:number,retries?:number,totalMs?:number,minMs?:number,maxMs?:number,averageMs?:number,medianMs?:number,lastError?:ResponseStatus,timings?:ConcurrentQueue<number>}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    type;
+    /** @type {string} */
+    name;
+    /** @type {number} */
+    count;
+    /** @type {number} */
+    failed;
+    /** @type {number} */
+    retries;
+    /** @type {number} */
+    totalMs;
+    /** @type {number} */
+    minMs;
+    /** @type {number} */
+    maxMs;
+    /** @type {number} */
+    averageMs;
+    /** @type {number} */
+    medianMs;
+    /** @type {?ResponseStatus} */
+    lastError;
+    /** @type {ConcurrentQueue<number>} */
+    timings;
+}
+export class CommandResult {
+    /** @param {{type?:string,name?:string,ms?:number,at?:string,request?:string,retries?:number,attempt?:number,error?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    type;
+    /** @type {string} */
+    name;
+    /** @type {?number} */
+    ms;
+    /** @type {string} */
+    at;
+    /** @type {string} */
+    request;
+    /** @type {?number} */
+    retries;
+    /** @type {number} */
+    attempt;
+    /** @type {?ResponseStatus} */
+    error;
+}
+export class PartialApiKey {
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],restrictTo?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },active?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string} */
+    visibleKey;
+    /** @type {string} */
+    environment;
+    /** @type {string} */
+    createdDate;
+    /** @type {?string} */
+    expiryDate;
+    /** @type {?string} */
+    cancelledDate;
+    /** @type {?string} */
+    lastUsedDate;
+    /** @type {string[]} */
+    scopes;
+    /** @type {string[]} */
+    features;
+    /** @type {string[]} */
+    restrictTo;
+    /** @type {string} */
+    notes;
+    /** @type {?number} */
+    refId;
+    /** @type {string} */
+    refIdStr;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+    /** @type {boolean} */
+    active;
+}
+export class JobStatSummary {
+    /** @param {{name?:string,total?:number,completed?:number,retries?:number,failed?:number,cancelled?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {number} */
+    total;
+    /** @type {number} */
+    completed;
+    /** @type {number} */
+    retries;
+    /** @type {number} */
+    failed;
+    /** @type {number} */
+    cancelled;
+}
+export class HourSummary {
+    /** @param {{hour?:string,total?:number,completed?:number,failed?:number,cancelled?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    hour;
+    /** @type {number} */
+    total;
+    /** @type {number} */
+    completed;
+    /** @type {number} */
+    failed;
+    /** @type {number} */
+    cancelled;
+}
+export class WorkerStats {
+    /** @param {{name?:string,queued?:number,received?:number,completed?:number,retries?:number,failed?:number,runningJob?:number,runningTime?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {number} */
+    queued;
+    /** @type {number} */
+    received;
+    /** @type {number} */
+    completed;
+    /** @type {number} */
+    retries;
+    /** @type {number} */
+    failed;
+    /** @type {?number} */
+    runningJob;
+    /** @type {?string} */
+    runningTime;
+}
+export class RequestLogEntry {
+    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    traceId;
+    /** @type {string} */
+    operationName;
+    /** @type {string} */
+    dateTime;
+    /** @type {number} */
+    statusCode;
+    /** @type {string} */
+    statusDescription;
+    /** @type {string} */
+    httpMethod;
+    /** @type {string} */
+    absoluteUri;
+    /** @type {string} */
+    pathInfo;
+    /** @type {string} */
+    requestBody;
+    /** @type {Object} */
+    requestDto;
+    /** @type {string} */
+    userAuthId;
+    /** @type {string} */
+    sessionId;
+    /** @type {string} */
+    ipAddress;
+    /** @type {string} */
+    forwardedFor;
+    /** @type {string} */
+    referer;
+    /** @type {{ [index: string]: string; }} */
+    headers;
+    /** @type {{ [index: string]: string; }} */
+    formData;
+    /** @type {{ [index: string]: string; }} */
+    items;
+    /** @type {{ [index: string]: string; }} */
+    responseHeaders;
+    /** @type {Object} */
+    session;
+    /** @type {Object} */
+    responseDto;
+    /** @type {Object} */
+    errorResponse;
+    /** @type {string} */
+    exceptionSource;
+    /** @type {any} */
+    exceptionData;
+    /** @type {string} */
+    requestDuration;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
 /** @typedef TKey {any} */
 /** @typedef  TValue {any} */
 export class KeyValuePair {
@@ -1240,16 +1698,8 @@ export class AdminDashboardResponse {
     /** @type {ResponseStatus} */
     responseStatus;
 }
-export class GetValidationRulesResponse {
-    /** @param {{results?:ValidationRule[],responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {ValidationRule[]} */
-    results;
-    /** @type {ResponseStatus} */
-    responseStatus;
-}
 export class AuthenticateResponse {
-    /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,profileUrl?:string,roles?:string[],permissions?:string[],responseStatus?:ResponseStatus,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,refreshTokenExpiry?:string,profileUrl?:string,roles?:string[],permissions?:string[],authProvider?:string,responseStatus?:ResponseStatus,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     userId;
@@ -1265,12 +1715,16 @@ export class AuthenticateResponse {
     bearerToken;
     /** @type {string} */
     refreshToken;
+    /** @type {?string} */
+    refreshTokenExpiry;
     /** @type {string} */
     profileUrl;
     /** @type {string[]} */
     roles;
     /** @type {string[]} */
     permissions;
+    /** @type {string} */
+    authProvider;
     /** @type {ResponseStatus} */
     responseStatus;
     /** @type {{ [index: string]: string; }} */
@@ -1343,18 +1797,6 @@ export class QueryResponse {
     /** @type {ResponseStatus} */
     responseStatus;
 }
-export class RequestLogsResponse {
-    /** @param {{results?:RequestLogEntry[],usage?:{ [index: string]: string; },total?:number,responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {RequestLogEntry[]} */
-    results;
-    /** @type {{ [index: string]: string; }} */
-    usage;
-    /** @type {number} */
-    total;
-    /** @type {ResponseStatus} */
-    responseStatus;
-}
 export class AdminProfilingResponse {
     /** @param {{results?:DiagnosticEntry[],total?:number,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1393,6 +1835,150 @@ export class AdminDatabaseResponse {
     /** @type {?ResponseStatus} */
     responseStatus;
 }
+export class ViewCommandsResponse {
+    /** @param {{commandTotals?:CommandSummary[],latestCommands?:CommandResult[],latestFailed?:CommandResult[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {CommandSummary[]} */
+    commandTotals;
+    /** @type {CommandResult[]} */
+    latestCommands;
+    /** @type {CommandResult[]} */
+    latestFailed;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class ExecuteCommandResponse {
+    /** @param {{commandResult?:CommandResult,result?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?CommandResult} */
+    commandResult;
+    /** @type {?string} */
+    result;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminApiKeysResponse {
+    /** @param {{results?:PartialApiKey[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {PartialApiKey[]} */
+    results;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class AdminApiKeyResponse {
+    /** @param {{result?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    result;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class EmptyResponse {
+    /** @param {{responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class AdminJobDashboardResponse {
+    /** @param {{commands?:JobStatSummary[],apis?:JobStatSummary[],workers?:JobStatSummary[],today?:HourSummary[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobStatSummary[]} */
+    commands;
+    /** @type {JobStatSummary[]} */
+    apis;
+    /** @type {JobStatSummary[]} */
+    workers;
+    /** @type {HourSummary[]} */
+    today;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminJobInfoResponse {
+    /** @param {{monthDbs?:string[],tableCounts?:{ [index: string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index: string]: number; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string[]} */
+    monthDbs;
+    /** @type {{ [index: string]: number; }} */
+    tableCounts;
+    /** @type {WorkerStats[]} */
+    workerStats;
+    /** @type {{ [index: string]: number; }} */
+    queueCounts;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobResponse {
+    /** @param {{result?:JobSummary,queued?:BackgroundJob,completed?:CompletedJob,failed?:FailedJob,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobSummary} */
+    result;
+    /** @type {?BackgroundJob} */
+    queued;
+    /** @type {?CompletedJob} */
+    completed;
+    /** @type {?FailedJob} */
+    failed;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobProgressResponse {
+    /** @param {{state?:BackgroundJobState,progress?:number,status?:string,logs?:string,durationMs?:number,error?:ResponseStatus,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {BackgroundJobState} */
+    state;
+    /** @type {?number} */
+    progress;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    logs;
+    /** @type {?number} */
+    durationMs;
+    /** @type {?ResponseStatus} */
+    error;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminRequeueFailedJobsJobsResponse {
+    /** @param {{results?:number[],errors?:{ [index: number]: string; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number[]} */
+    results;
+    /** @type {{ [index: number]: string; }} */
+    errors;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminCancelJobsResponse {
+    /** @param {{results?:number[],errors?:{ [index: number]: string; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number[]} */
+    results;
+    /** @type {{ [index: number]: string; }} */
+    errors;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class RequestLogsResponse {
+    /** @param {{results?:RequestLogEntry[],usage?:{ [index: string]: string; },total?:number,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {RequestLogEntry[]} */
+    results;
+    /** @type {{ [index: string]: string; }} */
+    usage;
+    /** @type {number} */
+    total;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class GetValidationRulesResponse {
+    /** @param {{results?:ValidationRule[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {ValidationRule[]} */
+    results;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
 export class MetadataApp {
     /** @param {{view?:string,includeTypes?:string[]}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1407,52 +1993,16 @@ export class MetadataApp {
 export class AdminDashboard {
     constructor(init) { Object.assign(this, init) }
     getTypeName() { return 'AdminDashboard' }
-    getMethod() { return 'POST' }
+    getMethod() { return 'GET' }
     createResponse() { return new AdminDashboardResponse() }
 }
-export class GetValidationRules {
-    /** @param {{authSecret?:string,type?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    authSecret;
-    /** @type {string} */
-    type;
-    getTypeName() { return 'GetValidationRules' }
-    getMethod() { return 'POST' }
-    createResponse() { return new GetValidationRulesResponse() }
-}
-export class ModifyValidationRules {
-    /** @param {{authSecret?:string,saveRules?:ValidationRule[],deleteRuleIds?:number[],suspendRuleIds?:number[],unsuspendRuleIds?:number[],clearCache?:boolean}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    authSecret;
-    /** @type {ValidationRule[]} */
-    saveRules;
-    /** @type {number[]} */
-    deleteRuleIds;
-    /** @type {number[]} */
-    suspendRuleIds;
-    /** @type {number[]} */
-    unsuspendRuleIds;
-    /** @type {?boolean} */
-    clearCache;
-    getTypeName() { return 'ModifyValidationRules' }
-    getMethod() { return 'POST' }
-    createResponse() { }
-}
 export class Authenticate {
-    /** @param {{provider?:string,state?:string,oauth_token?:string,oauth_verifier?:string,userName?:string,password?:string,rememberMe?:boolean,errorView?:string,nonce?:string,uri?:string,response?:string,qop?:string,nc?:string,cnonce?:string,accessToken?:string,accessTokenSecret?:string,scope?:string,returnUrl?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{provider?:string,userName?:string,password?:string,rememberMe?:boolean,accessToken?:string,accessTokenSecret?:string,returnUrl?:string,errorView?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /**
      * @type {string}
      * @description AuthProvider, e.g. credentials */
     provider;
-    /** @type {string} */
-    state;
-    /** @type {string} */
-    oauth_token;
-    /** @type {string} */
-    oauth_verifier;
     /** @type {string} */
     userName;
     /** @type {string} */
@@ -1460,27 +2010,13 @@ export class Authenticate {
     /** @type {?boolean} */
     rememberMe;
     /** @type {string} */
-    errorView;
-    /** @type {string} */
-    nonce;
-    /** @type {string} */
-    uri;
-    /** @type {string} */
-    response;
-    /** @type {string} */
-    qop;
-    /** @type {string} */
-    nc;
-    /** @type {string} */
-    cnonce;
-    /** @type {string} */
     accessToken;
     /** @type {string} */
     accessTokenSecret;
     /** @type {string} */
-    scope;
-    /** @type {string} */
     returnUrl;
+    /** @type {string} */
+    errorView;
     /** @type {{ [index: string]: string; }} */
     meta;
     getTypeName() { return 'Authenticate' }
@@ -1542,7 +2078,7 @@ export class AdminQueryUsers {
     createResponse() { return new AdminUsersResponse() }
 }
 export class AdminCreateUser extends AdminUserBase {
-    /** @param {{roles?:string[],permissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{roles?:string[],permissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {string[]} */
     roles;
@@ -1553,7 +2089,7 @@ export class AdminCreateUser extends AdminUserBase {
     createResponse() { return new AdminUserResponse() }
 }
 export class AdminUpdateUser extends AdminUserBase {
-    /** @param {{id?:string,lockUser?:boolean,unlockUser?:boolean,addRoles?:string[],removeRoles?:string[],addPermissions?:string[],removePermissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:string,lockUser?:boolean,unlockUser?:boolean,lockUserUntil?:string,addRoles?:string[],removeRoles?:string[],addPermissions?:string[],removePermissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {string} */
     id;
@@ -1561,6 +2097,8 @@ export class AdminUpdateUser extends AdminUserBase {
     lockUser;
     /** @type {?boolean} */
     unlockUser;
+    /** @type {?string} */
+    lockUserUntil;
     /** @type {string[]} */
     addRoles;
     /** @type {string[]} */
@@ -1582,69 +2120,14 @@ export class AdminDeleteUser {
     getMethod() { return 'DELETE' }
     createResponse() { return new AdminDeleteUserResponse() }
 }
-export class GetCrudEvents extends QueryDb {
-    /** @param {{authSecret?:string,model?:string,modelId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+export class AdminQueryRequestLogs extends QueryDb {
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
-    /** @type {string} */
-    authSecret;
-    /** @type {string} */
-    model;
-    /** @type {string} */
-    modelId;
-    getTypeName() { return 'GetCrudEvents' }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminQueryRequestLogs' }
     getMethod() { return 'GET' }
     createResponse() { return new QueryResponse() }
-}
-export class RequestLogs {
-    /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?number} */
-    beforeSecs;
-    /** @type {?number} */
-    afterSecs;
-    /** @type {string} */
-    operationName;
-    /** @type {string} */
-    ipAddress;
-    /** @type {string} */
-    forwardedFor;
-    /** @type {string} */
-    userAuthId;
-    /** @type {string} */
-    sessionId;
-    /** @type {string} */
-    referer;
-    /** @type {string} */
-    pathInfo;
-    /** @type {number[]} */
-    ids;
-    /** @type {?number} */
-    beforeId;
-    /** @type {?number} */
-    afterId;
-    /** @type {?boolean} */
-    hasResponse;
-    /** @type {?boolean} */
-    withErrors;
-    /** @type {?boolean} */
-    enableSessionTracking;
-    /** @type {?boolean} */
-    enableResponseTracking;
-    /** @type {?boolean} */
-    enableErrorTracking;
-    /** @type {?string} */
-    durationLongerThan;
-    /** @type {?string} */
-    durationLessThan;
-    /** @type {number} */
-    skip;
-    /** @type {?number} */
-    take;
-    /** @type {string} */
-    orderBy;
-    getTypeName() { return 'RequestLogs' }
-    getMethod() { return 'POST' }
-    createResponse() { return new RequestLogsResponse() }
 }
 export class AdminProfiling {
     /** @param {{source?:string,eventType?:string,threadId?:number,traceId?:string,userAuthId?:string,sessionId?:string,tag?:string,skip?:number,take?:number,orderBy?:string,withErrors?:boolean,pending?:boolean}} [init] */
@@ -1718,4 +2201,312 @@ export class AdminDatabase {
     getTypeName() { return 'AdminDatabase' }
     getMethod() { return 'GET' }
     createResponse() { return new AdminDatabaseResponse() }
+}
+export class ViewCommands {
+    /** @param {{include?:string[],skip?:number,take?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string[]} */
+    include;
+    /** @type {?number} */
+    skip;
+    /** @type {?number} */
+    take;
+    getTypeName() { return 'ViewCommands' }
+    getMethod() { return 'GET' }
+    createResponse() { return new ViewCommandsResponse() }
+}
+export class ExecuteCommand {
+    /** @param {{command?:string,requestJson?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    command;
+    /** @type {?string} */
+    requestJson;
+    getTypeName() { return 'ExecuteCommand' }
+    getMethod() { return 'POST' }
+    createResponse() { return new ExecuteCommandResponse() }
+}
+export class AdminQueryApiKeys {
+    /** @param {{id?:number,search?:string,userId?:string,userName?:string,orderBy?:string,skip?:number,take?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {string} */
+    search;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string} */
+    orderBy;
+    /** @type {?number} */
+    skip;
+    /** @type {?number} */
+    take;
+    getTypeName() { return 'AdminQueryApiKeys' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminApiKeysResponse() }
+}
+export class AdminCreateApiKey {
+    /** @param {{name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string[]} */
+    scopes;
+    /** @type {string[]} */
+    features;
+    /** @type {string[]} */
+    restrictTo;
+    /** @type {?string} */
+    expiryDate;
+    /** @type {string} */
+    notes;
+    /** @type {?number} */
+    refId;
+    /** @type {string} */
+    refIdStr;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+    getTypeName() { return 'AdminCreateApiKey' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminApiKeyResponse() }
+}
+export class AdminUpdateApiKey {
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },reset?:string[]}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string[]} */
+    scopes;
+    /** @type {string[]} */
+    features;
+    /** @type {string[]} */
+    restrictTo;
+    /** @type {?string} */
+    expiryDate;
+    /** @type {?string} */
+    cancelledDate;
+    /** @type {string} */
+    notes;
+    /** @type {?number} */
+    refId;
+    /** @type {string} */
+    refIdStr;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+    /** @type {string[]} */
+    reset;
+    getTypeName() { return 'AdminUpdateApiKey' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new EmptyResponse() }
+}
+export class AdminDeleteApiKey {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    getTypeName() { return 'AdminDeleteApiKey' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new EmptyResponse() }
+}
+export class AdminJobDashboard {
+    /** @param {{from?:string,to?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    from;
+    /** @type {?string} */
+    to;
+    getTypeName() { return 'AdminJobDashboard' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminJobDashboardResponse() }
+}
+export class AdminJobInfo {
+    /** @param {{month?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminJobInfo' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminJobInfoResponse() }
+}
+export class AdminGetJob {
+    /** @param {{id?:number,refId?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {?string} */
+    refId;
+    getTypeName() { return 'AdminGetJob' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobResponse() }
+}
+export class AdminGetJobProgress {
+    /** @param {{id?:number,logStart?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    logStart;
+    getTypeName() { return 'AdminGetJobProgress' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobProgressResponse() }
+}
+export class AdminQueryBackgroundJobs extends QueryDb {
+    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {?string} */
+    refId;
+    getTypeName() { return 'AdminQueryBackgroundJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryJobSummary extends QueryDb {
+    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {?string} */
+    refId;
+    getTypeName() { return 'AdminQueryJobSummary' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryScheduledTasks extends QueryDb {
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    getTypeName() { return 'AdminQueryScheduledTasks' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryCompletedJobs extends QueryDb {
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminQueryCompletedJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryFailedJobs extends QueryDb {
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminQueryFailedJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminRequeueFailedJobs {
+    /** @param {{ids?:number[]}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number[]} */
+    ids;
+    getTypeName() { return 'AdminRequeueFailedJobs' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminRequeueFailedJobsJobsResponse() }
+}
+export class AdminCancelJobs {
+    /** @param {{ids?:number[],worker?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number[]} */
+    ids;
+    /** @type {?string} */
+    worker;
+    getTypeName() { return 'AdminCancelJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminCancelJobsResponse() }
+}
+export class RequestLogs {
+    /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    beforeSecs;
+    /** @type {?number} */
+    afterSecs;
+    /** @type {string} */
+    operationName;
+    /** @type {string} */
+    ipAddress;
+    /** @type {string} */
+    forwardedFor;
+    /** @type {string} */
+    userAuthId;
+    /** @type {string} */
+    sessionId;
+    /** @type {string} */
+    referer;
+    /** @type {string} */
+    pathInfo;
+    /** @type {number[]} */
+    ids;
+    /** @type {?number} */
+    beforeId;
+    /** @type {?number} */
+    afterId;
+    /** @type {?boolean} */
+    hasResponse;
+    /** @type {?boolean} */
+    withErrors;
+    /** @type {?boolean} */
+    enableSessionTracking;
+    /** @type {?boolean} */
+    enableResponseTracking;
+    /** @type {?boolean} */
+    enableErrorTracking;
+    /** @type {?string} */
+    durationLongerThan;
+    /** @type {?string} */
+    durationLessThan;
+    /** @type {number} */
+    skip;
+    /** @type {?number} */
+    take;
+    /** @type {string} */
+    orderBy;
+    getTypeName() { return 'RequestLogs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new RequestLogsResponse() }
+}
+export class GetValidationRules {
+    /** @param {{authSecret?:string,type?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    authSecret;
+    /** @type {string} */
+    type;
+    getTypeName() { return 'GetValidationRules' }
+    getMethod() { return 'GET' }
+    createResponse() { return new GetValidationRulesResponse() }
+}
+export class ModifyValidationRules {
+    /** @param {{authSecret?:string,saveRules?:ValidationRule[],deleteRuleIds?:number[],suspendRuleIds?:number[],unsuspendRuleIds?:number[],clearCache?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    authSecret;
+    /** @type {ValidationRule[]} */
+    saveRules;
+    /** @type {number[]} */
+    deleteRuleIds;
+    /** @type {number[]} */
+    suspendRuleIds;
+    /** @type {number[]} */
+    unsuspendRuleIds;
+    /** @type {?boolean} */
+    clearCache;
+    getTypeName() { return 'ModifyValidationRules' }
+    getMethod() { return 'POST' }
+    createResponse() { }
 }

@@ -112,7 +112,7 @@ public static class SessionExtensions
         return base64Id;
     }
 
-    static readonly char[] UrlUnsafeBase64Chars = { '+', '/' };
+    static readonly char[] UrlUnsafeBase64Chars = ['+', '/'];
     public static bool Base64StringContainsUrlUnfriendlyChars(string base64)
     {
         return base64.IndexOfAny(UrlUnsafeBase64Chars) >= 0;
@@ -365,7 +365,7 @@ public static class SessionExtensions
 
     public static async Task GenerateNewSessionCookiesAsync(this IRequest req, IAuthSession session, CancellationToken token=default)
     {
-        if (!(req.Response is IHttpResponse httpRes))
+        if (req.Response is not IHttpResponse httpRes)
             return;
 
         var sessionId = req.GetSessionId();

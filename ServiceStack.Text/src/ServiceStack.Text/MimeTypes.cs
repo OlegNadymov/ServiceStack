@@ -14,6 +14,7 @@ public static class MimeTypes
     public const string Xml = "application/xml";
     public const string XmlText = "text/xml";
     public const string Json = "application/json";
+    public const string JsonUtf8Suffix = Json + Utf8Suffix;
     public const string ProblemJson = "application/problem+json";
     public const string JsonText = "text/json";
     public const string Jsv = "application/jsv";
@@ -67,7 +68,7 @@ public static class MimeTypes
         if (parts.Length == 1) return "." + parts[0].LeftPart('+').LeftPart(';');
         if (parts.Length == 2) return "." + parts[1].LeftPart('+').LeftPart(';');
 
-        throw new NotSupportedException("Unknown mimeType: " + mimeType);
+        throw new NotSupportedException("Unknown mimeType");
     }
         
     //Lower cases and trims left part of content-type prior ';'
@@ -104,6 +105,8 @@ public static class MimeTypes
     {
         if (contentType == null || matchesContentType == null)
             return false;
+        if (contentType == matchesContentType) // exact match
+            return true;
             
         int start = -1, matchStart = -1, matchEnd = -1;
 
@@ -241,6 +244,8 @@ public static class MimeTypes
 
             case "csv":
                 return Csv;
+            case "jsonl":
+                return Jsonl;
             case "css":
                 return Css;
                     
@@ -292,7 +297,7 @@ public static class MimeTypes
                 return "text/sgml";
 
             case "mp3":
-                return "audio/mpeg3";
+                return "audio/mpeg";
 
             case "au":
             case "snd":

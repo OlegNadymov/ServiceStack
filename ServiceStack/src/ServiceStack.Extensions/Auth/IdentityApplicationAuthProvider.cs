@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,17 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
-
-public interface IIdentityApplicationAuthProvider
-{
-    void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
-    Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
-}
 
 /// <summary>
 /// Handles converting from Application Cookie ClaimsPrincipal into a ServiceStack Session
@@ -26,7 +19,7 @@ public interface IIdentityApplicationAuthProvider
 public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, 
     IAuthWithRequest, IAuthPlugin, IIdentityApplicationAuthProvider
     where TKey : IEquatable<TKey>
-    where TUser : IdentityUser<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
     public const string Name = AuthenticateService.IdentityProvider;
     public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;
@@ -68,6 +61,8 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         [ClaimTypes.HomePhone] = nameof(AuthUserSession.HomePhone),
         [ClaimTypes.MobilePhone] = nameof(AuthUserSession.MobilePhone),
         [ClaimTypes.Webpage] = nameof(AuthUserSession.Webpage),
+        [JwtClaimTypes.NickName] = nameof(AuthUserSession.DisplayName),
+        [JwtClaimTypes.Picture] = nameof(AuthUserSession.ProfileUrl),
     };
 
     /// <summary>
@@ -101,7 +96,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
     public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
     {
         var claimsPrincipal = req.GetClaimsPrincipal();
-        if (claimsPrincipal.Identity?.IsAuthenticated != true)
+        if (claimsPrincipal?.Identity?.IsAuthenticated != true)
             return;
 
         var session = await req.GetSessionAsync().ConfigAwait();
@@ -158,23 +153,23 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         {
             if (claim.Type == ClaimTypes.Role)
             {
-                session.Roles ??= new();
-                session.Roles.Add(claim.Value);
+                session.Roles ??= [];
+                session.Roles.AddIfNotExists(claim.Value);
             }
             else if (claim.Type == PermissionClaimType)
             {
-                session.Permissions ??= new();
-                session.Permissions.Add(claim.Value);
+                session.Permissions ??= [];
+                session.Permissions.AddIfNotExists(claim.Value);
             }
             else if (extended != null && claim.Type == JwtClaimTypes.Audience)
             {
-                extended.Audiences ??= new();
-                extended.Audiences.Add(claim.Value);
+                extended.Audiences ??= [];
+                extended.Audiences.AddIfNotExists(claim.Value);
             }
             else if (extended != null && claim.Type == JwtClaimTypes.Scope)
             {
-                extended.Scopes ??= new();
-                extended.Scopes.Add(claim.Value);
+                extended.Scopes ??= [];
+                extended.Scopes.AddIfNotExists(claim.Value);
             }
             else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
             {
@@ -212,7 +207,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
 
         var applicationServices = appHost.GetApplicationServices();
 
-        var appOptionsMonitor = applicationServices.TryResolve<IOptionsMonitor<CookieAuthenticationOptions>>();
+        var appOptionsMonitor = applicationServices.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
         Options = appOptionsMonitor.Get(AuthenticationScheme);
 
         authFeature.HtmlRedirect = Options.LoginPath;

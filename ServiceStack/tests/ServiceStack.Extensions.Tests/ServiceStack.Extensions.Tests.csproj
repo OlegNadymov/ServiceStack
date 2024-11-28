@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
 <!-- TODO GET AutoQuery CRUD to work after existing tests have been resolved -->
         <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>
     </PropertyGroup>
@@ -16,9 +16,12 @@
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi\ServiceStack.AspNetCore.OpenApi.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Jobs\ServiceStack.Jobs.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
@@ -30,11 +33,15 @@
         <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
         <PackageReference Include="NUnit" Version="3.*" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.59.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.59.0" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.67.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.67.0" />
         <PackageReference Include="Grpc.Core" Version="2.46.6" />
-        <PackageReference Include="Google.Protobuf" Version="3.21.12" />
-        <PackageReference Include="System.ServiceModel.Primitives" Version="4.10.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.27.1" />
+        <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
     </ItemGroup>
 
 </Project>

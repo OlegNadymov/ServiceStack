@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -45,8 +46,9 @@ namespace ServiceStack.Auth
     /// <summary>
     /// The POCO Table used to persist API Keys
     /// </summary>
-    public class ApiKey : IMeta
+    public class ApiKey : IApiKey
     {
+        string IApiKey.Key => Id;
         public string Id { get; set; }
         public string UserAuthId { get; set; }
 
@@ -62,6 +64,9 @@ namespace ServiceStack.Auth
         public int? RefId { get; set; }
         public string RefIdStr { get; set; }
         public Dictionary<string, string> Meta { get; set; }
+        public bool HasScope(string scope) => false;
+        public bool HasFeature(string feature) => false;
+        public bool CanAccess(Type requestType) => false;
     }
 
     public delegate string CreateApiKeyDelegate(string environment, string keyType, int keySizeBytes);
@@ -69,20 +74,20 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Enable access to protected Services using API Keys
     /// </summary>
-    public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
+    public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequest
     {
         public override string Type => "Bearer";
         public const string Name = AuthenticateService.ApiKeyProvider;
         public const string Realm = "/auth/" + AuthenticateService.ApiKeyProvider;
 
-        public static string[] DefaultTypes = new[] { "secret" };
-        public static string[] DefaultEnvironments = new[] { "live", "test" };
+        public static string[] DefaultTypes = ["secret"];
+        public static string[] DefaultEnvironments = ["live", "test"];
         public static int DefaultKeySizeBytes = 24;
 
         /// <summary>
         /// Modify the registration of GetApiKeys and RegenerateApiKeys Services
         /// </summary>
-        public Dictionary<Type, string[]> ServiceRoutes { get; set; }
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new();
 
         /// <summary>
         /// How much entropy should the generated keys have. (default 24)
@@ -223,7 +228,7 @@ namespace ServiceStack.Auth
                 ValidateApiKey(authService.Request, apiKey);
                 
                 if (string.IsNullOrEmpty(apiKey.UserAuthId))
-                    throw HttpError.Conflict(ErrorMessages.ApiKeyIsInvalid.Localize(authService.Request));
+                    throw HttpError.Conflict(ErrorMessages.ApiKeyInvalid.Localize(authService.Request));
 
                 var userAuth = await authRepo.GetUserAuthAsync(apiKey.UserAuthId, token).ConfigAwait();
                 if (userAuth == null)
@@ -363,6 +368,12 @@ namespace ServiceStack.Auth
 
         public static string GetSessionKey(string apiKey) => "key:sess:" + apiKey;
 
+        public override void Configure(IServiceCollection services, AuthFeature feature)
+        {
+            base.Configure(services, feature);
+            services.RegisterServices(ServiceRoutes);
+        }
+
         public override void Register(IAppHost appHost, AuthFeature feature)
         {
             base.Register(appHost, feature);
@@ -372,8 +383,6 @@ namespace ServiceStack.Auth
                 if (InitSchema)
                     manageApiKeys.InitApiKeySchema();
             }
-
-            appHost.RegisterServices(ServiceRoutes);
 
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
         }
@@ -515,13 +524,13 @@ namespace ServiceStack
 {
     public static class ApiKeyAuthProviderExtensions
     {
-        public static ApiKey GetApiKey(this IRequest req)
+        public static IApiKey GetApiKey(this IRequest req)
         {
             if (req == null)
                 return null;
 
             return req.Items.TryGetValue(Keywords.ApiKey, out var oApiKey)
-                ? oApiKey as ApiKey
+                ? oApiKey as IApiKey
                 : null;
         }
 
@@ -556,10 +565,8 @@ namespace ServiceStack
         }
     }
 
-    public class ManageApiKeysAsyncWrapper : IManageApiKeysAsync
+    public class ManageApiKeysAsyncWrapper(IManageApiKeys manageApiKeys) : IManageApiKeysAsync
     {
-        private readonly IManageApiKeys manageApiKeys;
-        public ManageApiKeysAsyncWrapper(IManageApiKeys manageApiKeys) => this.manageApiKeys = manageApiKeys;
         public void InitApiKeySchema() => manageApiKeys.InitApiKeySchema();
 
         public Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token = default) => 
@@ -573,6 +580,5 @@ namespace ServiceStack
             manageApiKeys.StoreAll(apiKeys);
             return Task.CompletedTask;
         }
-        
     }
 }

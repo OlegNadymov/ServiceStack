@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Data;
 using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
@@ -9,28 +10,23 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class AutoGenContext
+public class AutoGenContext(CrudCodeGenTypes instruction, string tableName, TableSchema tableSchema)
 {
-    public AutoGenContext(CrudCodeGenTypes instruction, string tableName, TableSchema tableSchema)
-    {
-        Instruction = instruction;
-        TableName = tableName;
-        TableSchema = tableSchema;
-    }
-
     /// <summary>
     /// AutoGen Request DTO Instruction
     /// </summary>
-    public CrudCodeGenTypes Instruction { get; set; }
+    public CrudCodeGenTypes Instruction { get; set; } = instruction;
+
     /// <summary>
     /// Original Table Name
     /// </summary>
-    public string TableName { get; }
+    public string TableName { get; } = tableName;
+
     /// <summary>
     /// RDBMS TableSchema
     /// </summary>
-    public TableSchema TableSchema { get; }
-        
+    public TableSchema TableSchema { get; } = tableSchema;
+
     /// <summary>
     /// Generated DataModel Name to use 
     /// </summary>
@@ -88,8 +84,16 @@ public interface IGenerateCrudServices
     string AccessRole { get; set; }
     DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema = null, string namedConnection = null,
         List<string> includeTables = null, List<string> excludeTables = null);
-    void Register(IAppHost appHost);
-    List<Type> GenerateMissingServices(AutoQueryFeature feature);
+    void Configure(IServiceCollection services);
+    
+    /// <summary>
+    /// Generate AutoQuery DTOs for specified RDBMS Tables
+    /// </summary>
+    /// <param name="feature"></param>
+    /// <param name="requestTypes"></param>
+    /// <returns>New AutoQuery Request DTOs</returns>
+    List<Type> GenerateMissingServices(AutoQueryFeature feature, HashSet<Type> requestTypes);
+    
     Action<List<TableSchema>> TableSchemasFilter { get; set; }
 
     /// <summary>
@@ -122,7 +126,7 @@ public static class CrudUtils
         Dictionary<string, object> args = null, Attribute attr = null)
     {
         var metaAttr = ToAttribute(name, args, attr);
-        type.Attributes ??= new List<MetadataAttribute>();
+        type.Attributes ??= [];
         type.Attributes.Add(metaAttr);
         return type;
     }
@@ -131,7 +135,7 @@ public static class CrudUtils
     {
         var nativeTypesGen = HostContext.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
         var metaAttr = nativeTypesGen.ToMetadataAttribute(attr);
-        type.Attributes ??= new List<MetadataAttribute>();
+        type.Attributes ??= [];
         type.Attributes.Add(metaAttr);
         return type;
     }
@@ -148,7 +152,7 @@ public static class CrudUtils
     {
         var nativeTypesGen = HostContext.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
         var metaAttr = nativeTypesGen.ToMetadataAttribute(attr);
-        propType.Attributes ??= new List<MetadataAttribute>();
+        propType.Attributes ??= [];
         propType.Attributes.Add(metaAttr);
         return propType;
     }
@@ -218,7 +222,7 @@ public class CreateCrudServices : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-public class CrudCodeGenTypes : NativeTypesBase, IMeta, IReturn<string>
+public class CrudCodeGenTypes : NativeTypesBase, IMeta, IGet, IReturn<string>
 {
     /// <summary>
     /// Either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types
@@ -282,7 +286,7 @@ public class CrudCodeGenTypes : NativeTypesBase, IMeta, IReturn<string>
     public Dictionary<string, string> Meta { get; set; }
 }
 
-public class CrudTables : IReturn<AutoCodeSchemaResponse>
+public class CrudTables : IGet, IReturn<AutoCodeSchemaResponse>
 {
     public string Schema { get; set; }
     public string NamedConnection { get; set; }
@@ -313,7 +317,7 @@ public class DbSchema
     public string Schema { get; set; }
     public string NamedConnection { get; set; }
 
-    public List<TableSchema> Tables { get; set; } = new List<TableSchema>();
+    public List<TableSchema> Tables { get; set; } = [];
 }
 
 public class TableSchema

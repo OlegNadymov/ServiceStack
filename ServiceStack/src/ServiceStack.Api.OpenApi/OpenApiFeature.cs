@@ -50,6 +50,8 @@ namespace ServiceStack.Api.OpenApi
 
         public Dictionary<string, List<string>> OperationSecurity { get; set; }
 
+        public Func<Type, bool> IgnoreRequest { get; set; } = _ => false;
+
         public bool UseBearerSecurity
         {
             set
@@ -62,7 +64,7 @@ namespace ServiceStack.Api.OpenApi
                     } }
                 };
                 OperationSecurity = new Dictionary<string, List<string>> {
-                    { "Bearer", new List<string>() }
+                    { "Bearer", [] }
                 };
             }
         }
@@ -75,16 +77,16 @@ namespace ServiceStack.Api.OpenApi
                     { "basic", new OpenApiSecuritySchema { Type = "basic" } }
                 };
                 OperationSecurity = new Dictionary<string, List<string>> {
-                    { "basic", new List<string>() }
+                    { "basic", [] }
                 };
             }
         }
 
         public OpenApiFeature()
         {
-            Tags = new List<OpenApiTag>();
-            AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
-            InlineSchemaTypesInNamespaces = new List<string>();
+            Tags = [];
+            AnyRouteVerbs = [HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete];
+            InlineSchemaTypesInNamespaces = [];
         }
 
         public void BeforePluginsLoaded(IAppHost appHost)
@@ -101,7 +103,7 @@ namespace ServiceStack.Api.OpenApi
         public void Register(IAppHost appHost)
         {
             if (ResourceFilterPattern != null)
-                OpenApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+                OpenApiService.ResourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
             if (SecurityDefinitions == null && OperationSecurity == null)
             {
@@ -124,13 +126,15 @@ namespace ServiceStack.Api.OpenApi
             OpenApiService.InlineSchemaTypesInNamespaces = InlineSchemaTypesInNamespaces.ToArray();
             OpenApiService.SecurityDefinitions = SecurityDefinitions;
             OpenApiService.OperationSecurity = OperationSecurity;
+            OpenApiService.IgnoreRequest = IgnoreRequest;
 
             appHost.RegisterService(typeof(OpenApiService), "/openapi");
 
             if (!DisableSwaggerUI)
             {
-                appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
+                appHost.CatchAllHandlers.Add(req =>
                 {
+                    var pathInfo = req.PathInfo;
                     IVirtualFile indexFile;
                     IVirtualFile patchFile = null;
                     IVirtualFile patchPreLoadFile = null;

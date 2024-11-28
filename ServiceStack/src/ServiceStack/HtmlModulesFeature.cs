@@ -6,18 +6,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ServiceStack.Host;
 using ServiceStack.HtmlModules;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
+#if NET8_0_OR_GREATER
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+#endif
+
 namespace ServiceStack;
 
 /// <summary>
 /// Simple, lightweight and high-performant HTML templating solution 
 /// </summary>
-public class HtmlModulesFeature : IPlugin, Model.IHasStringId
+public class HtmlModulesFeature(params HtmlModule[] modules) : IPlugin, Model.IHasStringId
 {
     public string Id => "module:" + string.Join(",", Modules.Select(x => x.BasePath).ToArray());
     
@@ -35,8 +42,8 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     /// &lt;!--file:/path/to/single.html--&gt; or /*file:/path/to/single.txt*/
     /// &lt;!--files:/dir/components/*.html--&gt; or /*files:/dir/*.css*/
     /// </summary>
-    public List<IHtmlModulesHandler> Handlers { get; set; } = new()
-    {
+    public List<IHtmlModulesHandler> Handlers { get; set; } =
+    [
         new FileHandler("file"),
         new FilesHandler("files"),
         new FilesHandler("module")
@@ -44,19 +51,19 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
             Header = FilesTransformer.ModuleHeader,
             Footer = FilesTransformer.ModuleFooter,
         },
+
         new FileHandler("vfs") { VirtualFilesResolver = ctx => HostContext.VirtualFiles },
         new FileHandler("vfs[]") { VirtualFilesResolver = ctx => HostContext.VirtualFileSources },
-        new GatewayHandler("gateway"),
-    };
+        new GatewayHandler("gateway")
+    ];
 
     /// <summary>
     /// File Transformer to use when reading files
     /// </summary>
     public Func<IVirtualFile, string>? FileContentsResolver { get; set; }
     
-    public List<HtmlModule> Modules { get; set; }
-    public HtmlModulesFeature(params HtmlModule[] modules) => Modules = modules.ToList();
-    public List<Action<IAppHost, HtmlModule>> OnConfigure { get; set; } = new();
+    public List<HtmlModule> Modules { get; set; } = modules.ToList();
+    public List<Action<IAppHost, HtmlModule>> OnConfigure { get; set; } = [];
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
     /// <summary>
@@ -138,10 +145,10 @@ public class HtmlModulesFeature : IPlugin, Model.IHasStringId
     }
 }
 
-public class HtmlModuleContext
+public class HtmlModuleContext(HtmlModule module, IRequest request)
 {
-    public HtmlModule Module { get; }
-    public IRequest Request { get; }
+    public HtmlModule Module { get; } = module;
+    public IRequest Request { get; } = request;
     public IVirtualPathProvider VirtualFiles => Module.VirtualFiles!;
     public bool DebugMode => HostContext.DebugMode;
     public ServiceStackHost AppHost => HostContext.AppHost;
@@ -159,12 +166,6 @@ public class HtmlModuleContext
     public Func<IVirtualFile, string> FileContentsResolver => Module.FileContentsResolver != null
         ? Module.FileContentsResolver!
         : file => file.ReadAllText();
-
-    public HtmlModuleContext(HtmlModule module, IRequest request)
-    {
-        Module = module;
-        Request = request;
-    }
 
     public ReadOnlyMemory<byte> Cache(string key, Func<string, ReadOnlyMemory<byte>> handler)
     {
@@ -186,24 +187,27 @@ public class HtmlModule
     public IVirtualPathProvider? VirtualFiles { get; set; }
 
     public string IndexFile { get; set; } = "index.html";
-    public List<string> PublicPaths { get; set; } = new() {
+    public List<string> PublicPaths { get; set; } = [
         "/assets",
-        "/lib",
-    };
+        "/lib"
+    ];
 
-    public List<string> DynamicPageQueryStrings { get; set; } = new();
+    /// <summary>
+    /// Specify query string params that will disable caching to enable dynamic UI rendering per request
+    /// </summary>
+    public List<string> DynamicPageQueryStrings { get; set; } = [];
 
     public Dictionary<string, Func<HtmlModuleContext, ReadOnlyMemory<byte>>> Tokens { get; set; }
-    public List<IHtmlModulesHandler> Handlers { get; set; } = new();
+    public List<IHtmlModulesHandler> Handlers { get; set; } = [];
 
-    public List<HtmlModuleLine> LineTransformers { get; set; } = new();
+    public List<HtmlModuleLine> LineTransformers { get; set; } = [];
 
     /// <summary>
     /// File resolver to use to read file contents
     /// </summary>
     public Func<IVirtualFile, string>? FileContentsResolver { get; set; }
     
-    public List<Action<IAppHost, HtmlModule>> OnConfigure { get; set; } = new();
+    public List<Action<IAppHost, HtmlModule>> OnConfigure { get; set; } = [];
 
     public HtmlModule(string dirPath, string? basePath=null)
     {
@@ -221,17 +225,11 @@ public class HtmlModule
     
     public ConcurrentDictionary<string, ReadOnlyMemory<byte>> Cache { get; } = new();
 
-    struct FragmentTuple
+    struct FragmentTuple(int index, string token, IHtmlModuleFragment fragment)
     {
-        internal int index;
-        internal string token;
-        internal IHtmlModuleFragment fragment;
-        public FragmentTuple(int index, string token, IHtmlModuleFragment fragment)
-        {
-            this.index = index;
-            this.token = token;
-            this.fragment = fragment;
-        }
+        internal int index = index;
+        internal string token = token;
+        internal IHtmlModuleFragment fragment = fragment;
     };
 
     IHtmlModuleFragment[]? indexFragments;
@@ -364,28 +362,25 @@ public class HtmlModule
         zipCache.Clear();
         indexFragments = null;
     }
-    
-    public void Register(IAppHost appHost)
-    {
-        VirtualFiles ??= appHost.VirtualFiles;
-        var fragments = GetIndexFragments(); //force parsing
-        if (fragments.Length == 0) //Feature.IgnoreIfError
-            return;
 
-        appHost.RawHttpHandlers.Add(req =>
+    public Func<IHttpRequest, HttpAsyncTaskHandler?> GetHandler(IAppHost appHost)
+    {
+        return req =>
         {
             if (!req.PathInfo.StartsWith(BasePath))
                 return null;
-            
+
             foreach (var path in PublicPaths)
             {
                 if (req.PathInfo.StartsWith(BasePath + path))
                 {
-                    var file = VirtualFiles.GetFile(DirPath + req.PathInfo.Substring(BasePath.Length));
+                    var file = VirtualFiles!.GetFile(DirPath + req.PathInfo.Substring(BasePath.Length));
                     return file != null
-                        ? new StaticFileHandler(file) {
+                        ? new StaticFileHandler(file)
+                        {
                             Filter = appHost.Config.DebugMode
-                                ? (request, response, file) => {
+                                ? (request, response, _) =>
+                                {
                                     response.AddHeader(HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate");
                                     response.AddHeader(HttpHeaders.Pragma, "no-cache");
                                     response.AddHeader(HttpHeaders.Expires, "0");
@@ -418,29 +413,28 @@ public class HtmlModule
                         await RenderTo(httpRes.OutputStream);
                         return;
                     }
-                    
-                    if (!dynamicUi)
+
+                    if (EnableHttpCaching == true && indexFileETag != null)
                     {
-                        if (EnableHttpCaching == true && indexFileETag != null)
+                        httpRes.ContentType ??= MimeTypes.HtmlUtf8;
+                        httpRes.AddHeader(HttpHeaders.ContentType, httpRes.ContentType);
+
+                        httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
+                        if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
+                            httpRes.AddHeader(HttpHeaders.CacheControl,
+                                CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
+
+                        if (req.ETagMatch(indexFileETag))
                         {
-                            httpRes.ContentType ??= MimeTypes.HtmlUtf8;
-                            httpRes.AddHeader(HttpHeaders.ContentType, httpRes.ContentType);
-
-                            httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
-                            if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
-                                httpRes.AddHeader(HttpHeaders.CacheControl, CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
-
-                            if (req.ETagMatch(indexFileETag))
-                            {
-                                httpRes.EndNotModified();
-                                return;
-                            }
-                        }
-
-                        if (EnableCompression == true && await TryReturnCompressedResponse(httpReq, httpRes).ConfigAwait())
+                            httpRes.EndNotModified();
                             return;
+                        }
                     }
-                    
+
+                    if (EnableCompression == true &&
+                        await TryReturnCompressedResponse(httpReq, httpRes).ConfigAwait())
+                        return;
+
                     using var ms = MemoryStreamFactory.GetStream();
                     await RenderTo(ms);
                     ms.Position = 0;
@@ -451,7 +445,8 @@ public class HtmlModule
                         indexFileETag = ms.ToMd5Hash().Quoted();
                         httpRes.AddHeader(HttpHeaders.ETag, indexFileETag);
                         if (httpRes.GetHeader(HttpHeaders.CacheControl) == null)
-                            httpRes.AddHeader(HttpHeaders.CacheControl, CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
+                            httpRes.AddHeader(HttpHeaders.CacheControl,
+                                CacheControl ?? HtmlModulesFeature.DefaultCacheControl);
                     }
 
                     if (EnableCompression == true)
@@ -468,7 +463,33 @@ public class HtmlModule
                     await httpRes.WriteError(ex).ConfigAwait();
                 }
             });
+        };
+    }
+    
+    public void Register(IAppHost appHost)
+    {
+        VirtualFiles ??= appHost.VirtualFiles;
+        var fragments = GetIndexFragments(); //force parsing
+        if (fragments.Length == 0) //Feature.IgnoreIfError
+            return;
+
+        var handlerFn = GetHandler(appHost);
+        appHost.RawHttpHandlers.Add(handlerFn);
+        
+#if NET8_0_OR_GREATER
+        (appHost as IAppHostNetCore).MapEndpoints(routeBuilder =>
+        {
+            routeBuilder.MapGet(BasePath + "/{*path}", httpContext => {
+                    var req = httpContext.ToRequest();
+                    var handler = handlerFn(req);
+                    if (handler != null)
+                        return handler.ProcessRequestAsync(req, req.Response, httpContext.Request.Path);
+                    return Task.CompletedTask;
+                })
+                .WithMetadata<string>(name:BasePath, tag:GetType().Name, contentType:MimeTypes.Html, additionalContentTypes:[MimeTypes.JavaScript]);
         });
+#endif
+
     }
 
     private async Task<bool> TryReturnCompressedResponse(IRequest httpReq, IResponse httpRes)
